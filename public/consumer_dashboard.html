@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consumer Dashboard - FoodEx</title>
+    <link rel="stylesheet" href="asset/css/consumer_dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<header>
+  <nav>
+      <button id="toggleBtn" class="menuBtn">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="logo">
+      <a href="#home">FoodEx BD</a>
+    </div>
+    <ul class="nav-links">
+      <li><a href="consumer_dashboard.html">Home</a></li>
+      <li><a href="consumer_profile.html">Profile</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#testimonials">Testimonials</a></li>
+      <li><a href="#contact">Contact Us</a></li>
+    </ul>
+    <button id="logoutButton" class="logoutBtn">Logout</button>
+  </nav>
+</header>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <span class="closeBtn" id="closeSidebar">&times;</span>
+  <ul>
+    <li><a href="consumer_dashboard.html">Home</a></li>
+    <li><a href="consumer_profile.html">Profile</a></li>
+    <li><a href="consumer_order.html">Your Order</a></li>
+    <li><a href="#testimonials">Testimonials</a></li>
+    <li><a href="#contact">Contact Us</a></li>
+  </ul>
+</div>
+
+<!-- Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+
+    <div class="content">
+        <main>
+            <section class="product-list">
+                <h2>Available Products</h2>
+                <div id="products-container" class="products-grid"></div>
+            </section>
+        </main>
+    </div>
+
+    <footer>
+    <div class="footer-content">
+      <div class="footer-logo">FoodEx BD</div>
+      <ul class="footer-links">
+        <li><a href="#about-us">About Us</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="#privacy-policy">Privacy Policy</a></li>
+        <li><a href="#terms-of-service">Terms of Service</a></li>
+      </ul>
+      <div class="social-media">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+      </div>
+      <p class="copyright">&copy; 2025 FoodEx BD. All rights reserved.</p>
+    </div>
+  </footer>
+    <script src="js/consumer_dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register As</title>
+    <link rel="stylesheet" href="asset/css/register_prompt.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <ul class="nav-links">
+                <button id="toggleBtn">
+                    ☰ Menu
+                </button>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#testimonials">Testimonials</a></li>
+            </ul>
+            <button id="logout" class="logout-btn">Logout</button>
+        </nav>
+    </header>
+
+    <div class="main-content">
+        <div class="register-prompt-container">
+            <h1>Are you a?</h1>
+            <button type="submit" id="farmerRegister">
+                <i class="fas fa-tractor"></i> Farmer?
+            </button>
+            <button type="submit" id="consumerRegister">
+                <i class="fas fa-user"></i> Consumer?
+            </button>
+        </div>
+    </div>
+    
+    <footer>
+        <ul>
+            <li><a href="#about-us">About Us</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="#privacy-policy">Privacy Policy</a></li>
+            <li><a href="#terms-of-service">Terms of Service</a></li>
+        </ul>
+        <div class="social-media">
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('farmerRegister').addEventListener('click', function(){
+            alert('Please contact with us!')
+        });
+
+        document.getElementById('consumerRegister').addEventListener('click', function(){
+            window.location.href = 'register_consumer.html';
+        });
+
+        // This is for the mobile menu toggle, consistent with other pages
+        const toggleBtn = document.getElementById('toggleBtn');
+        const navLinks = document.querySelector('.nav-links');
+
+        toggleBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

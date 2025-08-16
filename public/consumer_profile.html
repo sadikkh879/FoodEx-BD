@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+     
+  <meta charset="UTF-8">
+     
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+  <link rel="stylesheet" href="asset/css/consumer_profile.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+      <header>
+    <nav>
+      <button id="toggleBtn" class="menuBtn">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="logo">
+        <a href="#home">FoodEx BD</a>
+      </div>
+      <ul class="nav-links">
+        <li><a href="consumer_dashboard.html">Home</a></li>
+        <li><a href="consumer_profile.html">Profile</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#testimonials">Testimonials</a></li>
+        <li><a href="#contact">Contact Us</a></li>
+      </ul>
+      <button id="logoutButton" class="logoutBtn">Logout</button>
+    </nav>
+  </header>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <span class="closeBtn" id="closeSidebar">&times;</span>
+    <ul>
+      <li><a href="consumer_dashboard.html">Home</a></li>
+      <li><a href="consumer_profile.html">Profile</a></li>
+      <li><a href="consumer_order.html">Your Order</a></li>
+      <li><a href="#testimonials">Testimonials</a></li>
+      <li><a href="#contact">Contact Us</a></li>
+    </ul>
+  </div>
+
+  <!-- Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+      <div id="toast" class="toast"></div>
+
+  <div class="content">
+    <div class="profile-container">
+      <div class="profile-summary">
+        <h3>Your Info</h3>
+        <p><strong>Name:</strong> <span id="summaryName">Loading...</span></p>
+        <p><strong>Address:</strong> <span id="summaryAddress">Loading...</span></p>
+        <p><strong>Phone:</strong> <span id="summaryPhone">Loading...</span></p>
+        <p><strong>NID:</strong> <span id="summaryNID">Loading...</span></p>
+        <div id="summaryPhoto"></div>
+      </div>
+
+      <form id="profileForm" enctype="multipart/form-data">
+        <label>NID Number</label>
+        <input type="text" id="nid" required />
+        <span id="nidError" style="color: red; font-size: 0.9em;"></span>
+
+        <label>Phone No</label>
+        <input type="text" id="phone" required />
+
+        <label>Profile Photo (With face)</label>
+        <input type="file" id="photo" accept="image/*" required />
+
+        <button type="submit">Update Profile</button>
+      </form>
+    </div>
+  </div>
+
+      <footer>
+    <div class="footer-content">
+      <div class="footer-logo">FoodEx BD</div>
+      <ul class="footer-links">
+        <li><a href="#about-us">About Us</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="#privacy-policy">Privacy Policy</a></li>
+        <li><a href="#terms-of-service">Terms of Service</a></li>
+      </ul>
+      <div class="social-media">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+      </div>
+      <p class="copyright">&copy; 2025 FoodEx BD. All rights reserved.</p>
+    </div>
+  </footer>
+     
+  <script src="js/consumer_profile.js"></script>
+</body>
+
+</html>

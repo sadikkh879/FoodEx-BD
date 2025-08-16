@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consumer Registration</title>
+    <link rel="stylesheet" href="asset/css/register_consumer.css">
+</head>
+<body>
+
+
+        <header>
+            <nav class="navbar">
+                <ul class="nav-links">
+                    <button id="toggleBtn">
+                        ☰ Menu
+                    </button>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#testimonials">Testimonials</a></li>
+                </ul>
+                <button id="logout" class="logout-btn">Login</button>
+            </nav>
+        </header>
+<div class="main-content">
+    <div class="register-container">
+        <h2>Register as a Consumer</h2>
+        <form id="consumer-register-form">
+            <label>Name:</label>
+            <input type="text" name="name" required>
+
+            <label>Email:</label>
+            <input type="email" name="email" required>
+
+            <label>Password:</label>
+            <input type="password" name="password" required>
+
+            <label>Address:</label>
+            <input type="text" name="address" required>
+
+            <button type="submit">Register</button>
+        </form>
+        <p>Already have an account? <a href="consumer_login.html">Login here</a></p>
+    </div>
+</div>
+
+    <footer>
+    <ul>
+      <li><a href="#about-us">About Us</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="#privacy-policy">Privacy Policy</a></li>
+      <li><a href="#terms-of-service">Terms of Service</a></li>
+    </ul>
+    <div class="social-media">
+      <a href="#"><i class="fab fa-facebook"></i></a>
+      <a href="#"><i class="fab fa-twitter"></i></a>
+      <a href="#"><i class="fab fa-instagram"></i></a>
+    </div>
+  </footer>
+
+    <script src="js/register_consumer.js"></script>
+</body>
+</html>

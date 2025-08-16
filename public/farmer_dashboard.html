@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Farmer Dashboard</title>
+  <link rel="stylesheet" href="./asset/css/farmer_dashboard.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <nav class="navbar">
+      <ul class="nav-links">
+        <button id="toggleBtn">
+            ☰ Menu
+        </button>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#testimonials">Testimonials</a></li>
+      </ul>
+      <button id="logout" class="logout-btn">Logout</button>
+    </nav>
+  </header>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+    <a href="#" class="closeBtn">&times;</a>
+    <a href="#">Home</a>
+    <a href="#">About</a>
+    <a href="#">Services</a>
+    <a href="#">Contact</a>
+  </div>
+
+  <!-- Dashboard Layout -->
+  <div class="dashboard-wrapper">
+
+    <!-- Main Content -->
+    <main class="dashboard-container">
+
+      <!-- Add Product Form -->
+      <section class="add-product">
+        <h2>Add New Product</h2>
+        <form id="add-product-form" enctype="multipart/form-data">
+          <label>Product Name:</label>
+          <input type="text" name="productName" required />
+
+          <label>Product Details:</label>
+          <input type="text" name="productDetails" required />
+
+          <label for="deliveryHubLocation">Delivery Hub Location:</label>
+<select id="deliveryHubLocation" name="deliveryLocation" required>
+  <option value="">--Please select a location--</option>
+  <option value="Gazipur">Gazipur</option>
+  <option value="Uttara, Dhaka">Uttara, Dhaka</option>
+  <option value="Mirpur 10, Dhaka">Mirpur 10, Dhaka</option>
+  <option value="Banani, Dhaka">Banani, Dhaka</option>
+  <option value="Dhanmondi, Dhaka">Dhanmondi, Dhaka</option>
+</select>
+
+          <label>Price per Unit (Tk):</label>
+          <input type="number" name="price" step="0.01" required />
+
+          <label>Minimum Delivery Order (kg/unit):</label>
+          <input type="number" name="minOrder" required />
+
+          <label>Maximum Delivery Order (kg/unit):</label>
+          <input type="number" name="maxOrder" required />
+
+          <label>Product Image:</label>
+          <input type="file" name="productImage" accept="image/*" required />
+
+          <button type="submit">Add Product</button>
+        </form>
+      </section>
+
+      <!-- Product List -->
+      <section class="product-list">
+        <h2>Your Products</h2>
+        <div id="products-container" class="products-grid">
+          <!-- Product cards will be injected here by JS -->
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <ul>
+      <li><a href="#about-us">About Us</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="#privacy-policy">Privacy Policy</a></li>
+      <li><a href="#terms-of-service">Terms of Service</a></li>
+    </ul>
+    <div class="social-media">
+      <a href="#"><i class="fab fa-facebook"></i></a>
+      <a href="#"><i class="fab fa-twitter"></i></a>
+      <a href="#"><i class="fab fa-instagram"></i></a>
+    </div>
+  </footer>
+
+  <script src="js/farmer_dashboard.js"></script>
+</body>
+</html>
