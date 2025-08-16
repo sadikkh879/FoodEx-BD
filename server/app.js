@@ -31,7 +31,7 @@ app.locals.pool = mysql.createPool({
 
 // Serve homepage
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'public', 'landing.html'));
 });
 
 // Start server
