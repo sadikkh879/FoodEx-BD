@@ -212,30 +212,42 @@ router.put('/profile/:id', upload.single('photo'), async (req, res) => {
       return res.status(409).json({ message: 'This NID is already registered with another account.' });
     }
 
-    let photoPath = null;
+    // let photoPath = null;
 
-    // If photo is uploaded, validate face first
+    // 1. Face validation with Flask
     if (req.file) {
-      photoPath = req.file.filename;
-      const fullPath = path.join(__dirname, '..', '..', 'uploads', 'profiles', photoPath);
-      const faceDetected = await checkFace(fullPath);
+      const faceForm = new FormData();
+      faceForm.append('photo', req.file.buffer, {
+        filename: req.file.originalname,
+        contentType: req.file.mimetype,
+      });
 
-      if (!faceDetected) {
-        // Delete the uploaded photo to avoid storing invalid images
-        fs.unlink(fullPath, (err) => {
-          if (err) console.error('Failed to delete invalid photo:', err);
-        });
-        return res.status(400).json({ message: 'Please upload a clear photo showing your face.' });
+      const flaskRes = await fetch('http://localhost:5001/detect-face', {
+        method: 'POST',
+        body: faceForm
+      });
+
+      const faceData = await flaskRes.json();
+
+      if (!faceData.faceDetected) {
+        return res.status(400).json({ message: "Please upload a clear photo showing your face." });
+      }
+
+      if (faceData.facesCount > 1) {
+        return res.status(400).json({ message: "Multiple faces detected. Please upload a photo with only your face." });
       }
     }
 
-    // Proceed with update only if all checks pass
-    await pool.execute(
-      'UPDATE consumers SET number = ?, nid_number = ?, profile_photo = ? WHERE id = ?',
-      [phone, nid_number, photoPath, req.params.id]
+    // 2. Save data to DB
+    const { phone, nid_number } = req.body;
+    const profilePhoto = req.file ? req.file.filename : null;
+
+    await pool.query(
+      "UPDATE consumers SET number=?, nid_number=?, profile_photo=? WHERE id=?",
+      [phone, nid_number, profilePhoto, consumerId]
     );
 
-    res.json({ message: 'Profile updated successfully' });
+    res.json({ message: "Profile updated successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

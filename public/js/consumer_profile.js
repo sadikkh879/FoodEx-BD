@@ -35,19 +35,57 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
+// Toast utility
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.style.display = 'block';
+  setTimeout(() => {
+    toast.style.display = 'none';
+  }, 4000);
+}
+
+// Profile form submission
 document.getElementById('profileForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const consumerId = localStorage.getItem('consumerId');
   const token = localStorage.getItem('token');
-  const formData = new FormData();
+  const photoFile = document.getElementById('photo').files[0];
 
-//   formData.append('name', document.getElementById('name').value);
-  formData.append('phone', document.getElementById('phone').value);
-  formData.append('nid_number', document.getElementById('nid').value);
-  formData.append('photo', document.getElementById('photo').files[0]);
+  if (!photoFile) {
+    showToast("⚠️ Please upload a profile photo.");
+    return;
+  }
 
   try {
+    // Step 1: Validate face using Flask API
+    const faceFormData = new FormData();
+    faceFormData.append('photo', photoFile);
+
+    const faceRes = await fetch("http://localhost:5001/detect-face", {
+      method: "POST",
+      body: faceFormData
+    });
+
+    const faceData = await faceRes.json();
+
+    if (!faceData.faceDetected) {
+      showToast("⚠️ No face detected. Please upload a clear photo of your face.");
+      return;
+    }
+
+    if (faceData.facesCount > 1) {
+      showToast("⚠️ Multiple faces detected. Please upload a photo with only your face.");
+      return;
+    }
+
+    // Step 2: If valid, proceed with backend update
+    const formData = new FormData();
+    formData.append('phone', document.getElementById('phone').value);
+    formData.append('nid_number', document.getElementById('nid').value);
+    formData.append('photo', photoFile);
+
     const res = await fetch(`/api/consumer/profile/${consumerId}`, {
       method: 'PUT',
       headers: {
@@ -57,80 +95,17 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
     });
 
     const result = await res.json();
-      //Face detection
-  function showToast(message) {
-  const toast = document.getElementById('toast');
-  toast.textContent = message;
-  toast.style.display = 'block';
-  setTimeout(() => {
-    toast.style.display = 'none';
-  }, 4000);
-}
 
-// Usage
-if (result.message === 'Please upload a clear photo showing your face.') {
-  showToast('⚠️ Please upload a clear photo showing your face.');
-}else{
- // alert(result.message);
- showToast('Profile Updated successfully');
-// window.location.href('consumer_profile.html');
-}
-   // alert(result.message);
+    if (result.message) {
+      showToast(result.message);
+    } else {
+      showToast("✅ Profile updated successfully.");
+    }
+
   } catch (err) {
     console.error(err);
-    alert('Profile update failed.');
+    showToast("❌ Profile update failed.");
   }
-});
-
-
-//NID check
-function isValidNID(nid) {
-    return /^[0-9]{10}$/.test(nid) || /^[0-9]{13}$/.test(nid) || /^[0-9]{17}$/.test(nid);
-  }
-
-  const nidInput = document.getElementById('nid');
-  const nidError = document.getElementById('nidError');
-
-  nidInput.addEventListener('input', () => {
-    const nid = nidInput.value.trim();
-    if (nid === '') {
-      nidError.textContent = '';
-    } else if (!isValidNID(nid)) {
-      nidError.textContent = 'Invalid NID format. Must be 10, 13, or 17 digits.';
-    } else {
-      nidError.textContent = '';
-    }
-  });
-
-  //Prevent form submission if NID is invalid
-  document.querySelector('form').addEventListener('submit', function (e) {
-    const nid = nidInput.value.trim();
-    if (!isValidNID(nid)) {
-      e.preventDefault();
-      nidError.textContent = 'Please enter a valid NID before submitting.';
-    }
-  });
-
-
-//Slidebar handle
-const toggleBtn = document.getElementById("toggleBtn");
-const sidebar = document.getElementById("sidebar");
-const closeSidebar = document.getElementById("closeSidebar");
-const overlay = document.getElementById("sidebarOverlay");
-
-toggleBtn.addEventListener("click", () => {
-  sidebar.classList.add("active");
-  overlay.classList.add("active");
-});
-
-closeSidebar.addEventListener("click", () => {
-  sidebar.classList.remove("active");
-  overlay.classList.remove("active");
-});
-
-overlay.addEventListener("click", () => {
-  sidebar.classList.remove("active");
-  overlay.classList.remove("active");
 });
 
 
