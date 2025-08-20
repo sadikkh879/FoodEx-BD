@@ -47,7 +47,7 @@ router.post('/register/consumer', async (req, res) => {
         }
     });
 
-    const verificationLink = `http://localhost:3000/api/auth/verify-email?token=${token}`;
+    const verificationLink = `https://foodex-bd-production.up.railway.app/api/auth/verify-email?token=${token}`;
 
     await transporter.sendMail({
         from: '"Foodex" <emilyygreyy749@gmail.com>',
