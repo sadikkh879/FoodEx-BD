@@ -21,7 +21,7 @@ async function loadProducts() {
     const card = document.createElement('div');
     card.classList.add('product-card');
     card.innerHTML = `
-        <img src="/uploads/photos/${p.image}" alt="${p.product_name}" />
+        <img src="${p.image}" alt="${p.product_name}" />
         <h3 id="productName">${p.product_name}<br>Only ${p.price}tk</h3>
         <p>Fresh from: ${p.location}</p>
         <button id="viewBtn" onclick="go(${p.id})">View</button>

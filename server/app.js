@@ -5,7 +5,7 @@ const authRoutes = require('./routes/auth/authRoutes');
 const farmerRoutes = require('./routes/farmer/farmerRoutes');
 const consumerRoutes = require('./routes/consumer/consumerRoutes');
 const mysql = require('mysql2/promise');
-
+const uploadRoute = require('./routes/uploadControll/uploadController');
 const app = express();
 
 // Parse JSON bodies
@@ -18,6 +18,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/api/auth', authRoutes);
 app.use('/api/farmer', farmerRoutes);
 app.use('/api/consumer', consumerRoutes);
+app.use('/api', uploadRoute);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 

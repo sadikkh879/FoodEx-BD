@@ -2,25 +2,30 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const router = express.Router();
+const { BlobServiceClient } = require('@azure/storage-blob');
+require('dotenv').config();
+const upload = multer({ storage: multer.memoryStorage() });
+const containerName = 'product-images';
+const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
 
 // Multer storage config
 
-const fs = require('fs');
-const uploadPath = path.join(__dirname, '..', '..', 'uploads', 'photos');
+// const fs = require('fs');
+// const uploadPath = path.join(__dirname, '..', '..', 'uploads', 'photos');
 
-if (!fs.existsSync(uploadPath)) {
-    fs.mkdirSync(uploadPath, { recursive: true });
-}
+// if (!fs.existsSync(uploadPath)) {
+//     fs.mkdirSync(uploadPath, { recursive: true });
+// }
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, '..', '..' , 'uploads', 'photos'));
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
-const upload = multer({ storage });
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, path.join(__dirname, '..', '..' , 'uploads', 'photos'));
+//     },
+//     filename: (req, file, cb) => {
+//         cb(null, Date.now() + path.extname(file.originalname));
+//     }
+// });
+//const upload = multer({ storage });
 
 // Fetch all products for logged-in farmer
 router.get('/products/:farmerId', async (req, res) => {
@@ -61,27 +66,38 @@ router.get('/products/:farmerId', async (req, res) => {
 
 // Add new product with image
 router.post('/add-product', upload.single('productImage'), async (req, res) => {
-    const { farmerId, productName, productDetails, deliveryLocation, price, minOrder, maxOrder } = req.body;
-    const image = req.file ? req.file.filename : null;
+  const { farmerId, productName, productDetails, deliveryLocation, price, minOrder, maxOrder } = req.body;
 
-    if (!farmerId || !productName || !productDetails || !deliveryLocation || !price || !minOrder || !maxOrder || !image) {
-        return res.status(400).json({ message: 'All fields are required' });
-    }
+  if (!farmerId || !productName || !productDetails || !deliveryLocation || !price || !minOrder || !maxOrder || !req.file) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
 
-    try {
-        const pool = req.app.locals.pool;
-        await pool.query(
-            `INSERT INTO farmers_products (farmer_id, product_name, product_details, delivery_location, price, min_order, max_order, image) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [farmerId, productName, productDetails, deliveryLocation, price, minOrder, maxOrder, image]
-        );
-        res.status(201).json({ message: 'Product added successfully' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Database error' });
-    }
+  try {
+    // Upload to Azure Blob Storage
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    const blobName = `${Date.now()}-${req.file.originalname}`;
+    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+    await blockBlobClient.uploadData(req.file.buffer, {
+      blobHTTPHeaders: { blobContentType: req.file.mimetype }
+    });
+
+    const imageUrl = blockBlobClient.url;
+
+    // Save product to DB
+    const pool = req.app.locals.pool;
+    await pool.query(
+      `INSERT INTO farmers_products (farmer_id, product_name, product_details, delivery_location, price, min_order, max_order, image) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [farmerId, productName, productDetails, deliveryLocation, price, minOrder, maxOrder, imageUrl]
+    );
+
+    res.status(201).json({ message: 'Product added successfully' });
+  } catch (err) {
+    console.error('Upload or DB error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
-
 
 // delivery handle
 

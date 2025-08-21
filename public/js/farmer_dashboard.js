@@ -23,7 +23,7 @@ products.forEach(p => {
   const card = document.createElement('div');
   card.classList.add('product-card');
   card.innerHTML = `
-    <img src="/uploads/photos/${p.image}" alt="${p.product_name}" />
+    <img src="${p.image}" alt="${p.product_name}" />
     <h3>${p.product_name}</h3>
     <p>${p.product_details}</p>
     <p><strong>Price:</strong> ${p.price} Tk</p>
