@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (data.profile_photo) {
       document.getElementById('summaryPhoto').innerHTML = `
-        <img src="/uploads/profiles/${data.profile_photo}" alt="Profile Photo" />
+        <img src="${data.profile_photo}" alt="Profile Photo" />
       `;
     }
   } catch (err) {
@@ -32,8 +32,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     alert('Failed to load profile data.');
   }
 });
-
-
 
 // Toast utility
 function showToast(message) {
@@ -46,73 +44,92 @@ function showToast(message) {
 }
 
 // Profile form submission
-document.getElementById('profileForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
+document.addEventListener('DOMContentLoaded', () => {
+  const video = document.getElementById('cameraPreview');
+  const canvas = document.getElementById('photoCanvas');
+  const captureBtn = document.getElementById('captureBtn');
+  const photoDataInput = document.getElementById('photoData');
+  const toast = document.getElementById('toast');
   const consumerId = localStorage.getItem('consumerId');
-  const token = localStorage.getItem('token');
-  const photoFile = document.getElementById('photo').files[0];
 
-  if (!photoFile) {
-    showToast("⚠️ Please upload a profile photo.");
-    return;
+  // Show toast messages
+  function showToast(message) {
+    toast.textContent = message;
+    toast.style.display = 'block';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 3000);
   }
 
-  try {
-    // Step 1: Validate face using Flask API
-    const faceFormData = new FormData();
-    faceFormData.append('photo', photoFile);
-
-    const faceRes = await fetch("http://localhost:5001/detect-face", {
-      method: "POST",
-      body: faceFormData
+  // Start camera stream
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+    })
+    .catch(err => {
+      console.error("Camera access denied:", err);
+      showToast("❌ Unable to access camera.");
     });
 
-    const faceData = await faceRes.json();
+  // Capture photo from video stream
+  captureBtn.addEventListener('click', () => {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageData = canvas.toDataURL('image/jpeg');
+    photoDataInput.value = imageData;
+    showToast("📸 Photo captured. Ready to submit.");
+  });
 
-    if (!faceData.faceDetected) {
-      showToast("⚠️ No face detected. Please upload a clear photo of your face.");
+  // Handle profile form submission
+  document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const consumerId = localStorage.getItem('consumerId');
+    const token = localStorage.getItem('token');
+    const imageData = photoDataInput.value;
+
+    if (!imageData) {
+      showToast("⚠️ Please capture a photo before submitting.");
       return;
     }
 
-    if (faceData.facesCount > 1) {
-      showToast("⚠️ Multiple faces detected. Please upload a photo with only your face.");
-      return;
+    try {
+      const blob = await (await fetch(imageData)).blob();
+
+      const formData = new FormData();
+      formData.append('phone', document.getElementById('phone').value);
+      formData.append('nid_number', document.getElementById('nid').value);
+      formData.append('photo', blob, 'profile.jpg');
+
+      const res = await fetch(`/api/consumer/profileUpdate/${consumerId}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: 'Bearer ' + token
+        },
+        body: formData
+      });
+
+      const result = await res.json();
+
+      if (result.message) {
+        showToast(result.message);
+      } else {
+        showToast("✅ Profile updated successfully.");
+      }
+
+    } catch (err) {
+      console.error(err);
+      showToast("❌ Profile update failed.");
     }
-
-    // Step 2: If valid, proceed with backend update
-    const formData = new FormData();
-    formData.append('phone', document.getElementById('phone').value);
-    formData.append('nid_number', document.getElementById('nid').value);
-    formData.append('photo', photoFile);
-
-    const res = await fetch(`/api/consumer/profile/${consumerId}`, {
-      method: 'PUT',
-      headers: {
-        Authorization: 'Bearer ' + token
-      },
-      body: formData
-    });
-
-    const result = await res.json();
-
-    if (result.message) {
-      showToast(result.message);
-    } else {
-      showToast("✅ Profile updated successfully.");
-    }
-
-  } catch (err) {
-    console.error(err);
-    showToast("❌ Profile update failed.");
-  }
+  });
 });
 
 
-document.getElementById('logoutButton').addEventListener("click", function (){
-const confirmLogout = confirm("Are you sure you want to logout?");
-    if (confirmLogout) {
-      localStorage.clear(); 
-      window.location.href = "landing.html";
-    }
+document.getElementById('logoutButton').addEventListener("click", function () {
+  const confirmLogout = confirm("Are you sure you want to logout?");
+  if (confirmLogout) {
+    localStorage.clear();
+    window.location.href = "landing.html";
+  }
 });

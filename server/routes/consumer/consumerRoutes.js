@@ -192,7 +192,8 @@ function isValidNID(nid) {
   return /^[0-9]{10}$/.test(nid) || /^[0-9]{13}$/.test(nid) || /^[0-9]{17}$/.test(nid);
 }
 
-router.put('/profile/:id', upload.single('photo'), async (req, res) => {
+
+router.put('/profileUpdate/:id', upload.single('photo'), async (req, res) => {
   const pool = req.app.locals.pool;
   const { phone, nid_number } = req.body;
 
@@ -212,40 +213,23 @@ router.put('/profile/:id', upload.single('photo'), async (req, res) => {
       return res.status(409).json({ message: 'This NID is already registered with another account.' });
     }
 
-    // let photoPath = null;
-
-    // 1. Face validation with Flask
-    if (req.file) {
-      const faceForm = new FormData();
-      faceForm.append('photo', req.file.buffer, {
-        filename: req.file.originalname,
-        contentType: req.file.mimetype,
-      });
-
-      const flaskRes = await fetch('http://localhost:5001/detect-face', {
-        method: 'POST',
-        body: faceForm
-      });
-
-      const faceData = await flaskRes.json();
-
-      if (!faceData.faceDetected) {
-        return res.status(400).json({ message: "Please upload a clear photo showing your face." });
-      }
-
-      if (faceData.facesCount > 1) {
-        return res.status(400).json({ message: "Multiple faces detected. Please upload a photo with only your face." });
-      }
-    }
-
-    // 2. Save data to DB
-    const { phone, nid_number } = req.body;
     const profilePhoto = req.file ? req.file.filename : null;
+    const consumerId = req.params.id;
 
-    await pool.query(
-      "UPDATE consumers SET number=?, nid_number=?, profile_photo=? WHERE id=?",
-      [phone, nid_number, profilePhoto, consumerId]
-    );
+
+    // await pool.query(
+    //   "UPDATE consumers SET number=?, nid_number=?, profile_photo=? WHERE id=?",
+    //   [phone, nid_number, profilePhoto, consumerId]
+    // );
+
+    const [result] = await pool.query(
+  "UPDATE consumers SET number=?, nid_number=?, profile_photo=? WHERE id=?",
+  [phone, nid_number, profilePhoto, consumerId]
+);
+
+if (result.affectedRows === 0) {
+  return res.status(404).json({ message: "Consumer not found or no changes made." });
+}
 
     res.json({ message: "Profile updated successfully" });
   } catch (err) {

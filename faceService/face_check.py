@@ -1,11 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-CORS(app)
 import cv2
 import numpy as np
 import mediapipe as mp
-
 app = Flask(__name__)
+CORS(app)
 
 # Initialize Mediapipe face detection
 mp_face = mp.solutions.face_detection

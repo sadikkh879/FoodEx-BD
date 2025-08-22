@@ -68,8 +68,10 @@
         <input type="text" id="phone" required />
 
         <label>Profile Photo (With face)</label>
-        <input type="file" id="photo" accept="image/*" required />
-
+        <video id="cameraPreview" autoplay playsinline width="300"></video>
+        <canvas id="photoCanvas" style="display:none;"></canvas>
+        <button type="button" id="captureBtn">Capture Photo</button>
+        <input type="hidden" id="photoData" name="photoData" />
         <button type="submit">Update Profile</button>
       </form>
     </div>

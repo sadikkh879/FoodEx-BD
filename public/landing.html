@@ -11,9 +11,16 @@
   <header>
     <nav>
       <div class="logo">
-        <a href="#home">FoodEx BD</a>
+        <a href="landing.html"> 
+        <img id="logoPic" src="https://foodeximages.blob.core.windows.net/product-images/Copilot_20250817_120838-Photoroom.png" alt="logo">   
+        </a>    
       </div>
-      <ul class="nav-links">
+
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation">
+      ☰
+    </button>
+
+      <ul class="nav-links" id="nav-links">
         <li><a href="#home">Home</a></li>
         <li><a href="#features">Features</a></li>
         <li><a href="#how-it-works">How It Works</a></li>
@@ -229,6 +236,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('Failed to load products:', err);
   }
 });
+
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const navMenu = document.getElementById('nav-links');
+
+  hamburgerBtn.addEventListener('click', () => {
+    navMenu.classList.toggle('active');
+  });
+
 </script>
 </body>
 </html>
