@@ -25,7 +25,7 @@ async function loadProductDetails() {
     const product = await res.json();
 
     document.getElementById('productName').textContent = product.product_name;
-    document.getElementById('productImage').src = `/uploads/photos/${product.image}`;
+    document.getElementById('productImage').src = `${product.image}`;
     document.getElementById('productImage').alt = product.product_name;
     document.getElementById('productPrice').textContent = `Price: ${product.price}tk`;
     document.getElementById('productLocation').textContent = `Delivery Location: ${product.delivery_location} hub`;
@@ -77,6 +77,7 @@ document.getElementById('orderBtn').addEventListener('click', async () => {
 
     if (res.ok) {
       alert('✅ Order placed successfully!');
+      window.location.reload();
     } else {
       const err = await res.json();
       alert('❌ Order failed: ' + err.message);

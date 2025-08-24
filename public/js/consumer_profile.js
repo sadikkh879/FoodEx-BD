@@ -45,84 +45,92 @@ function showToast(message) {
 
 // Profile form submission
 document.addEventListener('DOMContentLoaded', () => {
-  const video = document.getElementById('cameraPreview');
-  const canvas = document.getElementById('photoCanvas');
-  const captureBtn = document.getElementById('captureBtn');
-  const photoDataInput = document.getElementById('photoData');
-  const toast = document.getElementById('toast');
-  const consumerId = localStorage.getItem('consumerId');
+let stream = null;
 
-  // Show toast messages
-  function showToast(message) {
-    toast.textContent = message;
-    toast.style.display = 'block';
-    setTimeout(() => {
-      toast.style.display = 'none';
-    }, 3000);
+const startCameraBtn = document.getElementById('startCameraBtn');
+const captureBtn = document.getElementById('captureBtn');
+const video = document.getElementById('cameraPreview');
+const canvas = document.getElementById('photoCanvas');
+const photoDataInput = document.getElementById('photoData');
+const profileForm = document.getElementById('profileForm');
+
+// Start camera on button click
+startCameraBtn.addEventListener('click', async () => {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+    video.style.display = 'block';
+    captureBtn.style.display = 'inline-block';
+    startCameraBtn.style.display = 'none';
+  } catch (err) {
+    console.error('Camera access error:', err);
+    showToast("❌ Unable to access camera.");
+  }
+});
+
+// Capture photo and stop camera
+captureBtn.addEventListener('click', () => {
+  const context = canvas.getContext('2d');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const imageDataURL = canvas.toDataURL('image/jpeg');
+  photoDataInput.value = imageDataURL;
+
+  // Stop camera stream
+  stream.getTracks().forEach(track => track.stop());
+  video.srcObject = null;
+  video.style.display = 'none';
+  captureBtn.style.display = 'none';
+  startCameraBtn.style.display = 'inline-block';
+
+  showToast("📸 Photo captured successfully.");
+});
+
+// Submit profile form
+profileForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const consumerId = localStorage.getItem('consumerId');
+  const token = localStorage.getItem('token');
+  const imageData = photoDataInput.value;
+
+  if (!imageData) {
+    showToast("⚠️ Please capture a photo before submitting.");
+    return;
   }
 
-  // Start camera stream
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-      video.srcObject = stream;
-    })
-    .catch(err => {
-      console.error("Camera access denied:", err);
-      showToast("❌ Unable to access camera.");
+  try {
+    const blob = await (await fetch(imageData)).blob();
+
+    const formData = new FormData();
+    formData.append('phone', document.getElementById('phone').value);
+    formData.append('nid_number', document.getElementById('nid').value);
+    formData.append('photo', blob, 'profile.jpg');
+
+    const res = await fetch(`/api/consumer/profileUpdate/${consumerId}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: 'Bearer ' + token
+      },
+      body: formData
     });
 
-  // Capture photo from video stream
-  captureBtn.addEventListener('click', () => {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    const imageData = canvas.toDataURL('image/jpeg');
-    photoDataInput.value = imageData;
-    showToast("📸 Photo captured. Ready to submit.");
-  });
+    const result = await res.json();
 
-  // Handle profile form submission
-  document.getElementById('profileForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const consumerId = localStorage.getItem('consumerId');
-    const token = localStorage.getItem('token');
-    const imageData = photoDataInput.value;
-
-    if (!imageData) {
-      showToast("⚠️ Please capture a photo before submitting.");
-      return;
+    if (result.message) {
+      showToast(result.message);
+      setTimeout(() => window.location.reload(), 2000);
+    } else {
+      showToast("✅ Profile updated successfully.");
     }
 
-    try {
-      const blob = await (await fetch(imageData)).blob();
-
-      const formData = new FormData();
-      formData.append('phone', document.getElementById('phone').value);
-      formData.append('nid_number', document.getElementById('nid').value);
-      formData.append('photo', blob, 'profile.jpg');
-
-      const res = await fetch(`/api/consumer/profileUpdate/${consumerId}`, {
-        method: 'PUT',
-        headers: {
-          Authorization: 'Bearer ' + token
-        },
-        body: formData
-      });
-
-      const result = await res.json();
-
-      if (result.message) {
-        showToast(result.message);
-      } else {
-        showToast("✅ Profile updated successfully.");
-      }
-
-    } catch (err) {
-      console.error(err);
-      showToast("❌ Profile update failed.");
-    }
-  });
+  } catch (err) {
+    console.error(err);
+    showToast("❌ Profile update failed.");
+  }
+});
 });
 
 

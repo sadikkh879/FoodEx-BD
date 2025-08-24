@@ -2,9 +2,8 @@
 <html lang="en">
 
 <head>
-     
   <meta charset="UTF-8">
-     
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile</title>
   <link rel="stylesheet" href="asset/css/consumer_profile.css">
@@ -18,7 +17,7 @@
         <i class="fas fa-bars"></i>
       </button>
       <div class="logo">
-        <a href="#home">FoodEx BD</a>
+        <a href="landing.html">FoodEx BD</a>
       </div>
       <ul class="nav-links">
         <li><a href="consumer_dashboard.html">Home</a></li>
@@ -46,7 +45,7 @@
   <!-- Overlay -->
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-      <div id="toast" class="toast"></div>
+   <div id="toast" class="toast"></div>
 
   <div class="content">
     <div class="profile-container">
@@ -68,11 +67,15 @@
         <input type="text" id="phone" required />
 
         <label>Profile Photo (With face)</label>
-        <video id="cameraPreview" autoplay playsinline width="300"></video>
+        <video id="cameraPreview" autoplay playsinline width="300" style="display:none;"></video>
         <canvas id="photoCanvas" style="display:none;"></canvas>
-        <button type="button" id="captureBtn">Capture Photo</button>
+
+        <button type="button" id="startCameraBtn">Start Camera</button>
+        <button type="button" id="captureBtn" style="display:none;">Capture Photo</button>
+
         <input type="hidden" id="photoData" name="photoData" />
         <button type="submit">Update Profile</button>
+
       </form>
     </div>
   </div>
@@ -94,7 +97,7 @@
       <p class="copyright">&copy; 2025 FoodEx BD. All rights reserved.</p>
     </div>
   </footer>
-     
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
   <script src="js/consumer_profile.js"></script>
 </body>
 
