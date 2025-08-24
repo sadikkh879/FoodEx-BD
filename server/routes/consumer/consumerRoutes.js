@@ -1,20 +1,26 @@
 const express = require('express');
 const router = express.Router();
+const { BlobServiceClient } = require('@azure/storage-blob');
 const axios = require('axios');
 const FormData = require('form-data');
 const fs = require('fs');
+require('dotenv').config();
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+const containerName = 'consumer-profiles';
+const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
 
 //Face Check function
-async function checkFace(photoPath) {
-  const form = new FormData();
-  form.append('photo', fs.createReadStream(photoPath));
+// async function checkFace(photoPath) {
+//   const form = new FormData();
+//   form.append('photo', fs.createReadStream(photoPath));
 
-  const res = await axios.post('http://localhost:5001/detect-face', form, {
-    headers: form.getHeaders()
-  });
+//   const res = await axios.post('http://localhost:5001/detect-face', form, {
+//     headers: form.getHeaders()
+//   });
 
-  return res.data.faceDetected;
-}
+//   return res.data.faceDetected;
+// }
 
 
 // Fetch all products from all farmers
@@ -176,16 +182,15 @@ router.get('/products/:id/progress', async (req, res) => {
 
 
 // Update Profile
-const multer = require('multer');
 const path = require('path');
-const storage = multer.diskStorage({
-  destination: 'uploads/profiles/',
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `consumer_${req.params.id}${ext}`);
-  }
-});
-const upload = multer({ storage });
+// // const storage = multer.diskStorage({
+//   destination: 'uploads/profiles/',
+//   filename: (req, file, cb) => {
+//     const ext = path.extname(file.originalname);
+//     cb(null, `consumer_${req.params.id}${ext}`);
+//   }
+// });
+// const upload = multer({ storage });
 
 // Checks NID validity
 function isValidNID(nid) {
@@ -216,6 +221,17 @@ router.put('/profileUpdate/:id', upload.single('photo'), async (req, res) => {
     const profilePhoto = req.file ? req.file.filename : null;
     const consumerId = req.params.id;
 
+        // Upload to Azure Blob Storage
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    const blobName = `${Date.now()}-${req.file.originalname}`;
+    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+    await blockBlobClient.uploadData(req.file.buffer, {
+      blobHTTPHeaders: { blobContentType: req.file.mimetype }
+    });
+
+    const imageUrl = blockBlobClient.url;
+
 
     // await pool.query(
     //   "UPDATE consumers SET number=?, nid_number=?, profile_photo=? WHERE id=?",
@@ -224,7 +240,7 @@ router.put('/profileUpdate/:id', upload.single('photo'), async (req, res) => {
 
     const [result] = await pool.query(
   "UPDATE consumers SET number=?, nid_number=?, profile_photo=? WHERE id=?",
-  [phone, nid_number, profilePhoto, consumerId]
+  [phone, nid_number, imageUrl, consumerId]
 );
 
 if (result.affectedRows === 0) {
