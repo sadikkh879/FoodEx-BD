@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const authRoutes = require('./routes/auth/authRoutes');
 const farmerRoutes = require('./routes/farmer/farmerRoutes');
 const consumerRoutes = require('./routes/consumer/consumerRoutes');
@@ -23,13 +24,30 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 // Set up MySQL connection pool
-app.locals.pool = mysql.createPool({
+async function initDB() {
+  try{
+  app.locals.pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   port: Number(process.env.DB_PORT),
-});
+  ssl: {
+        ca: fs.readFileSync(path.join(__dirname, 'ca.pem')),
+        rejectUnauthorized: true
+      },
+});  
+// Try a quick query to confirm connection
+    await app.locals.pool.query('SELECT 1');
+    console.log('✅ Database connected');
+  } catch (err) {
+    console.error('⚠️ Database connection failed:', err.message);
+    app.locals.pool = null; // Prevents routes from using a bad pool
+  }
+}
+
+initDB();
+
 
 // Serve homepage
 app.get('/', (req, res) => {
