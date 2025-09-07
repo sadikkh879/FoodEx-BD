@@ -23,7 +23,7 @@ async function loadOrders() {
       card.classList.add('product-card'); // use same styling as dashboard
 
       card.innerHTML = `
-        <img src="/uploads/photos/${order.image}" alt="${order.product_name}" />
+        <img src="${order.image}" alt="${order.product_name}" />
         <div class="card-body">
           <h3>${order.product_name}<br>Ordered: ${order.quantity} kg</h3>
           <p>Delivery Hub: ${order.delivery_location}</p>
