@@ -149,25 +149,28 @@ nav {
     visibility: visible;
 }
 
+.content{
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+
 /* Product cards */
 .products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-    margin-top: 20px;
-    padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 320px)); /* fixed max width per card */
+  gap: 30px;
+  margin-top: 20px;
+  justify-content: center; /* center the grid when fewer items */
 }
 
 .product-card {
-    width: 20%;
-    height: 20%;
-    margin-left: 250px;
-    background-color: #fff;
+    background-color: #ffffff;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     text-align: left;
+    max-width: 200px;
 }
 
 .product-card:hover {

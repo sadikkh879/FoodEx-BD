@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farmer Order Tracking</title>
+  <link rel="stylesheet" href="asset/css/consumer_dashboard.css">
+  <link rel="stylesheet" href="asset/css/farmer_order_tracking.css">
+</head>
+<body>
+
+<header>
+  <nav>
+    <button id="toggleBtn" class="menuBtn">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="logo">
+      <a href="consumer_dashboard.html">FoodEx BD</a>
+    </div>
+    <ul class="nav-links">
+      <li><a href="consumer_dashboard.html">Home</a></li>
+      <li><a href="consumer_profile.html">Profile</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#testimonials">Testimonials</a></li>
+      <li><a href="#contact">Contact Us</a></li>
+    </ul>
+    <button id="logoutButton" class="logoutBtn">Logout</button>
+  </nav>
+</header>
+
+<main class="main">
+  <h2 id="productTitle">Orders for Product</h2>
+  <div id="orders-container" class="orders-grid"></div>
+</main>
+
+<script src="js/farmer_order_tracking.js"></script>
+</body>
+</html>

@@ -186,11 +186,13 @@ nav {
 /* ================================== */
 
 .products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-    margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 320px)); /* fixed max width per card */
+  gap: 30px;
+  margin-top: 20px;
+  justify-content: center; /* center the grid when fewer items */
 }
+
 
 .product-card {
     background-color: #ffffff;
@@ -199,6 +201,7 @@ nav {
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     text-align: left;
+    max-width: 200px;
 }
 
 .product-card:hover {

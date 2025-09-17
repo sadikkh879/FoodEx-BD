@@ -18,20 +18,32 @@ async function loadOrders() {
     const container = document.querySelector('#orders-container');
     container.innerHTML = '';
 
+    if (!orders.length) {
+      container.innerHTML = '<p>You have no orders yet.</p>';
+      return;
+    }
+
     orders.forEach(order => {
       const card = document.createElement('div');
-      card.classList.add('product-card'); // use same styling as dashboard
+      card.classList.add('product-card');
+
+      // Color-code status
+      let statusColor = '#555';
+      if (order.status === 'Delivered') statusColor = '#28a745';
+      else if (order.status === 'On the Way') statusColor = '#007bff';
+      else if (order.status === 'Packaging') statusColor = '#ff9800';
+      else if (order.status === 'In Progress') statusColor = '#9c27b0';
 
       card.innerHTML = `
         <img src="${order.image}" alt="${order.product_name}" />
         <div class="card-body">
-          <h3>${order.product_name}<br>Ordered: ${order.quantity} kg</h3>
-          <p>Delivery Hub: ${order.delivery_location}</p>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: ${order.progressPercent}%"></div>
-          </div>
-          <p>Progress: ${order.progressPercent.toFixed(1)}%</p>
-          ${order.is_delivering ? '<p style="color:#28a745;font-weight:bold;">🚚 Delivery in progress</p>' : ''}
+          <h3>${order.product_name}</h3>
+          <p><strong>Ordered:</strong> ${order.quantity} kg</p>
+          <p><strong>Status:</strong> <span style="color:${statusColor};font-weight:bold;">${order.status || 'Pending'}</span></p>
+          <p><strong>Location:</strong> ${order.division_name}, ${order.district_name}, ${order.upazila_name}</p>
+          <p><strong>Details:</strong> ${order.additional_location || ''}</p>
+          <p><strong>Contact No:</strong> ${order.mobile_no || ''}</p>
+          <p><strong>Date:</strong> ${new Date(order.order_date).toLocaleString()}</p>
         </div>
       `;
 

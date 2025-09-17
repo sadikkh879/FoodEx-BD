@@ -53,65 +53,47 @@ router.get('/singleProduct/:id', async (req, res) => {
 });
 
 // Order Placing 
+// Order Placing (Simple Version)
 router.post('/orders', async (req, res) => {
-  const { product_id, quantity, consumer_id } = req.body;
-  //const user_id = req.user.id;
+  const { product_id, quantity, mobile_no, consumer_id, division_name, district_name, upazila_name, additional_location} = req.body;
   const pool = req.app.locals.pool;
 
   try {
-    // Get product limits
+    // Check if product exists
     const [productRows] = await pool.execute(
-      'SELECT min_order, max_order FROM farmers_products WHERE id = ?',
+      'SELECT id FROM farmers_products WHERE id = ?',
       [product_id]
     );
-    const product = productRows[0];
-    if (!product) return res.status(404).json({ message: 'Product not found' });
+    if (!productRows.length) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
 
-
-    //Check if user added NID and Image 
+    // Check if user profile is complete
     const [verifyRows] = await pool.query(
-    'SELECT number, nid_number, profile_photo FROM consumers WHERE id = ?',
-    [consumer_id]
-  );
-
-  // if (!rows.length) {
-  //   return res.status(404).json({ message: 'Consumer not found.' });
-  // }
-
-  const { number, nid_number, profile_photo } = verifyRows[0];
-
-  if (!nid_number || !profile_photo || !number ) {
-    return res.status(403).json({ message: 'Please complete your profile with Phone number, NID and photo before placing an order.' });
-  }
-
-    // Get current total ordered
-    const [orderStatsRows] = await pool.execute(
-      'SELECT SUM(quantity) AS totalOrdered FROM consumer_orders WHERE product_id = ?',
-      [product_id]
+      'SELECT number, nid_number, profile_photo FROM consumers WHERE id = ?',
+      [consumer_id]
     );
-    const totalOrdered = orderStatsRows[0].totalOrdered || 0;
 
-    // Check if adding this order exceeds max_order
-    if (quantity > product.max_order) {
-      return res.status(400).json({
-        message: `Only ${product.max_order - totalOrdered}kg left.`
+    if (!verifyRows.length) {
+      return res.status(404).json({ message: 'Consumer not found.' });
+    }
+
+    const { number, nid_number, profile_photo } = verifyRows[0];
+    if (!nid_number || !profile_photo || !number) {
+      return res.status(403).json({
+        message: 'Please complete your profile with Phone number, NID and photo before placing an order.'
       });
     }
 
-    // if (totalOrdered + quantity > product.max_order) {
-    //   return res.status(400).json({
-    //     message: `Order exceeds max limit. Only ${product.max_order - totalOrdered}kg left.`
-    //   });
-    // }
-
-
-    // Place the order
+    // Save the order with delivery location
     await pool.execute(
-      'INSERT INTO consumer_orders (consumer_id, product_id, quantity) VALUES (?, ?, ?)',
-      [consumer_id, product_id, quantity]
-    );
+  `INSERT INTO consumer_orders 
+    (consumer_id, product_id, quantity, division_name, district_name, upazila_name, additional_location, mobile_no) 
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  [consumer_id, product_id, quantity, division_name, district_name, upazila_name, additional_location, mobile_no]
+);
 
-    res.json({ message: 'Order placed successfully' });
+    res.json({ message: '✅ Order placed successfully!' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -275,20 +257,25 @@ router.get('/orders/summary/:consumerId', async (req, res) => {
 
   try {
     const [orders] = await pool.query(`
-      SELECT co.id AS order_id, co.quantity, fp.product_name, fp.image, fp.min_order, fp.max_order,
-             fp.delivery_location, fp.is_delivering,
-             (SELECT SUM(quantity) FROM consumer_orders WHERE product_id = fp.id) AS totalOrdered
+      SELECT 
+        co.id AS order_id,
+        co.quantity,
+        co.status, -- ✅ new: order status
+        co.division_name,
+        co.district_name,
+        co.upazila_name,
+        co.additional_location,
+        co.mobile_no,
+        co.created_at AS order_date,
+        fp.product_name,
+        fp.image
       FROM consumer_orders co
       JOIN farmers_products fp ON co.product_id = fp.id
       WHERE co.consumer_id = ?
+      ORDER BY co.created_at DESC
     `, [consumerId]);
 
-    const enriched = orders.map(o => ({
-      ...o,
-      progressPercent: Math.min((o.totalOrdered / o.min_order) * 100, 100)
-    }));
-
-    res.json(enriched);
+    res.json(orders);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

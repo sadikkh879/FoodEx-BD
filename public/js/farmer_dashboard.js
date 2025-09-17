@@ -10,67 +10,64 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 
-//Fetch products
+// Load products and show "View Orders" button
 async function loadProducts() {
-    try {
-        const res = await fetch(`/api/farmer/products/${farmerId}`);
-        const products = await res.json();
+  try {
+    const res = await fetch(`/api/farmer/products/${farmerId}`);
+    const products = await res.json();
 
-        const container = document.querySelector('#products-container');
-        container.innerHTML = '';
+    const container = document.querySelector('#products-container');
+    container.innerHTML = '';
 
-products.forEach(p => {
-  const card = document.createElement('div');
-  card.classList.add('product-card');
-  card.innerHTML = `
-    <img src="${p.image}" alt="${p.product_name}" />
-    <h3>${p.product_name}</h3>
-    <p>${p.product_details}</p>
-    <p><strong>Price:</strong> ${p.price} Tk</p>
-    <p><strong>Min Order:</strong> ${p.min_order}</p>
-    <p><strong>Max Order:</strong> ${p.max_order}</p>
-    <div class="progress-bar">
-      <div class="progress-fill" style="width: ${p.progressPercent}%"></div>
-    </div>
-    <p><strong>Ordered:</strong> ${p.totalOrdered} kg (${p.progressPercent.toFixed(1)}%)</p>
-  `;
-  container.appendChild(card);
+    products.forEach(p => {
+      const card = document.createElement('div');
+      card.classList.add('product-card');
 
-  if (p.totalOrdered >= p.min_order && p.totalOrdered <= p.max_order && !p.is_delivering) {
-  const deliverBtn = document.createElement('button');
-  deliverBtn.textContent = 'Start Delivering';
-  deliverBtn.classList.add('deliver-btn');
-  deliverBtn.addEventListener('click', async () => {
-    try {
-      const res = await fetch(`/api/farmer/start-delivery/${p.id}`, {
-        method: 'POST'
+      // Product info
+      card.innerHTML = `
+        <img src="${p.image}" alt="${p.product_name}" />
+        <h3>${p.product_name}</h3>
+        <p>${p.product_details}</p>
+        <p><strong>Price:</strong> ${p.price} Tk</p>
+        <p><strong>Ordered:</strong> ${p.totalOrdered} kg</p>
+      `;
+
+      // View Orders button
+      const viewOrdersBtn = document.createElement('button');
+      viewOrdersBtn.textContent = '📦 View Orders';
+      viewOrdersBtn.classList.add('view-orders-btn');
+      viewOrdersBtn.addEventListener('click', () => {
+        window.location.href = `farmer_order_tracking.html?productId=${p.id}`;
       });
-      const data = await res.json();
-      alert(data.message);
-      await loadProducts(); // Refresh UI
-    } catch (err) {
-      console.error(err);
-      alert('Failed to start delivery.');
-    }
-  });
-  card.appendChild(deliverBtn);
-}
+      card.appendChild(viewOrdersBtn);
 
-if (p.is_delivering) {
-  const status = document.createElement('p');
-  status.textContent = '🚚 Delivery in progress';
-  status.style.color = '#28a745';
-  card.appendChild(status);
+      container.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error(err);
+    alert('Error loading products.');
+  }
 }
 
 
-});
-
-    } catch (err) {
-        console.error(err);
-        alert('Error loading products.');
-    }
+// Helper function to update delivery status
+async function updateDeliveryStatus(productId, isDelivering) {
+  try {
+    const res = await fetch(`/api/farmer/delivery-status/${productId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_delivering: isDelivering })
+    });
+    const data = await res.json();
+    alert(data.message);
+    await loadProducts();
+  } catch (err) {
+    console.error(err);
+    alert('Failed to update delivery status.');
+  }
 }
+
 
 document.getElementById('add-product-form').addEventListener('submit', async function (e) {
     e.preventDefault();

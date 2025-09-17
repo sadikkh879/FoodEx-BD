@@ -3,23 +3,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="asset/css/consumer_dashboard.css">
     <link rel="stylesheet" href="asset/css/product.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <header>
-    <nav class="navbar">
-      <ul class="nav-links">
-        <button id="toggleBtn">
-            ☰ Menu
-        </button>
-        <li><a href="#home">Home</a></li>
-        <li><a href="#features">Features</a></li>
-        <li><a href="#how-it-works">How It Works</a></li>
-        <li><a href="#testimonials">Testimonials</a></li>
-      </ul>
-      <button id="logout" class="logout-btn">Logout</button>
-    </nav>
-  </header>
+  <nav>
+    <button id="toggleBtn" class="menuBtn">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="logo">
+      <a href="consumer_dashboard.html">FoodEx BD</a>
+    </div>
+    <ul class="nav-links">
+      <li><a href="consumer_dashboard.html">Home</a></li>
+      <li><a href="consumer_profile.html">Profile</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#testimonials">Testimonials</a></li>
+      <li><a href="#contact">Contact Us</a></li>
+    </ul>
+    <button id="logoutButton" class="logoutBtn">Logout</button>
+  </nav>
+</header>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <span class="closeBtn" id="closeSidebar">&times;</span>
+  <ul>
+    <li><a href="consumer_dashboard.html">Home</a></li>
+    <li><a href="consumer_profile.html">Profile</a></li>
+    <li><a href="consumer_order.html">Your Order</a></li>
+    <li><a href="#testimonials">Testimonials</a></li>
+    <li><a href="#contact">Contact Us</a></li>
+  </ul>
+</div>
+
+<!-- Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 
 <div class="productDetails">
   <h1 id="productName"></h1>
@@ -28,9 +50,50 @@
   <p id="productLocation"></p>
   <p id="productDescription"></p>
   <p id="productIsDelivered"></p>
-  <p>Minimun Order: 10kg <br>Max Order: 20kg</p>
+  <p>Minimun Order: 20kg <br>Max Order: 50kg</p>
   <button id="orderBtn">Order Now</button>
+  <button id="orderTrackBtn" style="display: none;">Track your order!</button>
 </div>
+
+<!-- Order Form Modal -->
+<div id="orderModal" class="modal">
+  <div class="modal-content">
+    <h3>Place Your Order</h3>
+
+    <label for="orderQty">Quantity (kg):</label>
+    <input type="number" id="orderQty" min="10" max="20" required>
+
+    <label for="mobileNo">Contact No:</label>
+    <input type="text" id="mobileNo" required>
+
+    <div class="location-group">
+  <label for="divisionSelect">Division:</label>
+  <select id="divisionSelect" required>
+    <option value="">-- Select Division --</option>
+  </select>
+
+  <label for="districtSelect">District:</label>
+  <select id="districtSelect" required disabled>
+    <option value="">-- Select District --</option>
+  </select>
+
+  <label for="upazilaSelect">Upazila:</label>
+  <select id="upazilaSelect" required disabled>
+    <option value="">-- Select Upazila --</option>
+  </select>
+
+  <label for="additionalLocation">Additional Location Info:</label>
+  <input type="text" id="additionalLocation" placeholder="e.g. House no, Road no, Area" disabled>
+</div>
+
+    
+    <div class="modal-actions">
+      <button id="submitOrder" class="btn btn-primary">Submit</button>
+      <button id="cancelOrder" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
 
   <!-- Footer -->
   <footer>
