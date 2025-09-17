@@ -23,21 +23,10 @@ router.post('/register/consumer', async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    const [result] = await pool.query(
-        'INSERT INTO consumers (name, email, password, address, role) VALUES (?, ?, ?, ?, ?)',
-        [name, email, hashed, address, role]
-    );
-
-    const consumerId = result.insertId;
 
     // Generate token
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 1000 * 60 * 30); // 30 minutes
-
-    await pool.query(
-        'INSERT INTO email_verifications (consumer_id, token, expires_at) VALUES (?, ?, ?)',
-        [consumerId, token, expiresAt]
-    );
 
     // Send email
     const transporter = nodemailer.createTransport({
@@ -60,6 +49,18 @@ router.post('/register/consumer', async (req, res) => {
     });
 
     res.status(201).json({ message: 'Registration successful. Please check your email to verify your account.' });
+
+    const [result] = await pool.query(
+        'INSERT INTO consumers (name, email, password, address, role) VALUES (?, ?, ?, ?, ?)',
+        [name, email, hashed, address, role]
+    );
+    const consumerId = result.insertId;
+
+    await pool.query(
+        'INSERT INTO email_verifications (consumer_id, token, expires_at) VALUES (?, ?, ?)',
+        [consumerId, token, expiresAt]
+    );
+
 
 } catch (err) {
     console.error(err);
