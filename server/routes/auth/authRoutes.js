@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 
 // Consumer Registration
@@ -40,12 +41,14 @@ router.post('/register/consumer', async (req, res) => {
 
     // Send email
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'emilyygreyy749@gmail.com',
-            pass: 'yusx htkf xzjd czwj'
-        }
-    });
+    host: process.env.SMTP_HOST,
+    port: 2525,
+    secure: false, // true for port 465, false for 587/2525
+    auth: {
+      user: process.env.SMTP_USERS,
+      pass: process.env.SMTP_PASSWORD
+    }
+  });
 
     const verificationLink = `https://foodex-bd.onrender.com/api/auth/verify-email?token=${token}`;
 
@@ -53,7 +56,7 @@ router.post('/register/consumer', async (req, res) => {
         from: '"Foodex" <emilyygreyy749@gmail.com>',
         to: email,
         subject: 'Verify your Foodex email',
-        html: `<p>Hi ${name},</p><p>Please verify your email by clicking the link below:</p><a href="${verificationLink}">Verify Email</a>`
+        html: `<p>Hi ${name},</p><p>Thank you for registering on Foodex. Please verify your email by clicking the link below:</p><a href="${verificationLink}">Verify Email</a>`
     });
 
     res.status(201).json({ message: 'Registration successful. Please check your email to verify your account.' });
