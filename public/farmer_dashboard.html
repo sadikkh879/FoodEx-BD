@@ -37,12 +37,15 @@
   <!-- Dashboard Layout -->
   <div class="dashboard-wrapper">
 
+     <button id="addBulkBtn">List Bulk Products</button>
+     <button id="addSingleBtn">List Single Products</button>
     <!-- Main Content -->
     <main class="dashboard-container">
 
-      <!-- Add Product Form -->
-      <section class="add-product">
-        <h2>Add New Product</h2>
+      <!-- Add Bulk Product Form -->
+      <section class="add-product" id="add-product" style="display: none;">
+        <h2>Add New Bulk Product</h2>
+        <p>These products will be delivered based on minimum Bulk order criteria</p>
         <form id="add-product-form" enctype="multipart/form-data">
           <label>Product Name:</label>
           <input type="text" name="productName" required />
@@ -68,6 +71,30 @@
 
           <label>Maximum Delivery Order (kg/unit):</label>
           <input type="number" name="maxOrder" required />
+
+          <label>Product Image:</label>
+          <input type="file" name="productImage" accept="image/*" required />
+
+          <button type="submit">Add Product</button>
+        </form>
+      </section>
+
+      <!-- Add Single Product Form -->
+      <section class="add-product" id="single-product" style="display: none;">
+        <h2>Add New Single Product</h2>
+        <p>These products will be delivered based on individual orders</p>
+        <form id="addSingle-product-form" enctype="multipart/form-data">
+          <label>Product Name:</label>
+          <input type="text" name="productName" required />
+
+          <label>Product Details:</label>
+          <input type="text" name="productDetails" required />
+
+          <label>Price per Unit (Tk):</label>
+          <input type="number" name="price" step="0.01" required />
+
+          <label>Your Maximum Product quantity in Store (kg)</label>
+          <input type="number" name="storage" required />
 
           <label>Product Image:</label>
           <input type="file" name="productImage" accept="image/*" required />

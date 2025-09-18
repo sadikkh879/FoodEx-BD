@@ -187,70 +187,201 @@ nav {
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 320px)); /* fixed max width per card */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
   gap: 30px;
   margin-top: 20px;
-  justify-content: center; /* center the grid when fewer items */
+  justify-content: center;
 }
 
-
+/* Card animation on load */
 .product-card {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-align: left;
-    max-width: 200px;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  text-align: left;
+  max-width: 220px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s ease forwards;
+  animation-delay: calc(var(--card-index) * 0.1s);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
 }
 
+/* Image hover zoom */
 .product-card img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 15px;
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  transition: transform 0.4s ease;
+}
+
+.product-card:hover img {
+  transform: scale(1.05);
 }
 
 .product-card h3 {
-    font-size: 1.5em;
-    margin: 0;
-    color: #4a4a4a;
+  font-size: 1.3em;
+  margin: 0;
+  color: #333;
+  font-weight: 600;
 }
 
 .product-card p {
-    font-size: 0.9em;
-    color: #777;
-    margin: 5px 0 15px;
+  font-size: 0.9em;
+  color: #555;
+  margin: 5px 0 10px;
 }
 
+/* Price styling */
+#mPrice {
+  text-decoration: line-through;
+  color: #d32f2f;
+  font-size: 0.95rem;
+}
+
+#cPrice {
+  color: #2e7d32;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* Discount badge */
+.discount-badge {
+  display: inline-block;
+  background: #ff5252;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  margin-left: 6px;
+}
+
+/* Button styling */
 .product-card button {
-    width: 100%;
-    padding: 10px;
-    background: linear-gradient(45deg, #1de419, #078600);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(45deg, #1de419, #078600);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease;
 }
 
 .product-card button:hover {
-  background: linear-gradient(45deg, #078600, #1de419, );
-    transform: translateY(-2px);
+  background: linear-gradient(45deg, #078600, #1de419);
+  transform: translateY(-2px) scale(1.02);
 }
 
-.product-card p.status {
-    font-weight: bold;
-    margin-top: 10px;
+.product-list h2 {
+  position: relative;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: 1px;
 }
+
+/* Decorative underline */
+.product-list h2::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(45deg, #1de419, #078600);
+  border-radius: 2px;
+}
+
+/* Optional subtle fade-in animation */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.product-list h2 {
+  animation: fadeInDown 0.6s ease forwards;
+}
+
+
+/* Status text */
+.product-card p.status {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* Keyframes for fade-in animation */
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.why-choose, .how-it-works, .testimonials {
+    padding: 40px 20px;
+    background: #f9f9f9;
+    margin-top: 40px;
+    border-radius: 10px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.feature {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.feature i {
+    font-size: 2rem;
+    color: #2ecc71;
+    margin-bottom: 10px;
+}
+
+.testimonials .testimonial {
+    background: white;
+    padding: 20px;
+    margin-top: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.testimonials .stars {
+    color: #FFD700; /* gold */
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
 
 /* ================================== */
 /* === 5. Footer === */

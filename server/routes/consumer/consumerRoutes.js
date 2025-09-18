@@ -23,14 +23,33 @@ const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZU
 // }
 
 
-// Fetch all products from all farmers
+// Fetch all single products from all farmers
 router.get('/products', async (req, res) => {
+  try {
+    const pool = req.app.locals.pool;
+    const [results] = await pool.query(`
+      SELECT fp.*, f.location
+      FROM farmers_products fp
+      JOIN farmers f ON fp.farmer_id = f.id
+      WHERE fp.is_bulk = 0
+    `);
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Database error' });
+  }
+});
+
+
+// Fetch all bulk products from all farmers
+router.get('/bulk-products', async (req, res) => {
     try {
     const pool = req.app.locals.pool;
     const [results] = await pool.query(`
-        SELECT fp.*, f.location
-        FROM farmers_products fp
-        JOIN farmers f ON fp.farmer_id = f.id
+       SELECT fp.*, f.location
+      FROM farmers_products fp
+      JOIN farmers f ON fp.farmer_id = f.id
+      WHERE fp.is_bulk = 1
     `);
     res.json(results);
 } catch (err) {
@@ -55,8 +74,13 @@ router.get('/singleProduct/:id', async (req, res) => {
 // Order Placing 
 // Order Placing (Simple Version)
 router.post('/orders', async (req, res) => {
-  const { product_id, quantity, mobile_no, consumer_id, division_name, district_name, upazila_name, additional_location} = req.body;
+  const { product_id, quantity, mobile_no, consumer_id, division_name, district_name, upazila_name, additional_location, payment_method, transaction_id} = req.body;
   const pool = req.app.locals.pool;
+
+
+  if(!transaction_id || !payment_method){
+      return res.status(404).json({ message: 'Transaction id and Payment method is needed' });
+  }
 
   try {
     // Check if product exists
@@ -88,9 +112,9 @@ router.post('/orders', async (req, res) => {
     // Save the order with delivery location
     await pool.execute(
   `INSERT INTO consumer_orders 
-    (consumer_id, product_id, quantity, division_name, district_name, upazila_name, additional_location, mobile_no) 
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  [consumer_id, product_id, quantity, division_name, district_name, upazila_name, additional_location, mobile_no]
+    (consumer_id, product_id, quantity, division_name, district_name, upazila_name, additional_location, mobile_no, payment_method, transaction_id) 
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  [consumer_id, product_id, quantity, division_name, district_name, upazila_name, additional_location, mobile_no, payment_method, transaction_id]
 );
 
     res.json({ message: '✅ Order placed successfully!' });
@@ -101,7 +125,59 @@ router.post('/orders', async (req, res) => {
 });
 
 
-// Existing Order Check
+//Bulk order backend request
+router.post('/bulk-orders', async (req, res) => {
+  const { product_id, quantity, mobile_no, consumer_id} = req.body;
+  const pool = req.app.locals.pool;
+
+  if(!product_id || !quantity || !mobile_no || !consumer_id){
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  try {
+    // Check if product exists
+    const [productRows] = await pool.execute(
+      'SELECT id FROM farmers_products WHERE id = ?',
+      [product_id]
+    );
+    if (!productRows.length) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Check if user profile is complete
+    const [verifyRows] = await pool.query(
+      'SELECT number, nid_number, profile_photo FROM consumers WHERE id = ?',
+      [consumer_id]
+    );
+
+    if (!verifyRows.length) {
+      return res.status(404).json({ message: 'Consumer not found.' });
+    }
+
+    const { number, nid_number, profile_photo } = verifyRows[0];
+    if (!nid_number || !profile_photo || !number) {
+      return res.status(403).json({
+        message: 'Please complete your profile with Phone number, NID and photo before placing an order.'
+      });
+    }
+
+    // Save the order with delivery location
+    await pool.execute(
+  `INSERT INTO consumer_bulk_orders
+    (consumer_id, product_id, quantity, mobile_no) 
+   VALUES (?, ?, ?, ?)`,
+  [consumer_id, product_id, quantity, mobile_no]
+);
+
+    res.json({ message: '✅ Order placed successfully!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+// Existing Sinle product Order Check
 router.get('/orders/check', async (req, res) => {
   const { consumer_id, product_id } = req.query;
   const pool = req.app.locals.pool;
@@ -128,7 +204,34 @@ router.get('/orders/check', async (req, res) => {
 });
 
 
-// Order Progress
+// Existing Bulk product Order Check
+router.get('/bulk-orders/check', async (req, res) => {
+  const { consumer_id, product_id } = req.query;
+  const pool = req.app.locals.pool;
+
+  if (!consumer_id || !product_id) {
+    return res.status(400).json({ ordered: false, message: 'Missing consumer_id or product_id' });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT id FROM consumer_bulk_orders WHERE consumer_id = ? AND product_id = ?',
+      [consumer_id, product_id]
+    );
+
+    if (rows.length > 0) {
+      return res.json({ ordered: true });
+    } else {
+      return res.json({ ordered: false });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ordered: false, message: 'Server error' });
+  }
+});
+
+
+// Single Product Order Progress
 router.get('/products/:id/progress', async (req, res) => {
   const productId = req.params.id;
   const pool = req.app.locals.pool;
@@ -154,6 +257,41 @@ router.get('/products/:id/progress', async (req, res) => {
     res.json({
       totalOrdered,
       minOrder: product.min_order,
+      progressPercent
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Bulk Product Order Progress
+router.get('/bulk-products/:id/progress', async (req, res) => {
+  const productId = req.params.id;
+  const pool = req.app.locals.pool;
+
+  try {
+    // Get product info
+    const [[product]] = await pool.query(
+      'SELECT min_order, max_order FROM farmers_products WHERE id = ?',
+      [productId]
+    );
+
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    // Sum all orders for this product
+    const [[orderStats]] = await pool.query(
+      'SELECT SUM(quantity) AS totalOrdered FROM consumer_bulk_orders WHERE product_id = ?',
+      [productId]
+    );
+
+    const totalOrdered = orderStats.totalOrdered || 0;
+    const progressPercent = Math.min((totalOrdered / product.min_order) * 100, 100);
+
+    res.json({
+      totalOrdered,
+      minOrder: product.min_order,
+      maxOrder: product.max_order,
       progressPercent
     });
   } catch (err) {
@@ -250,8 +388,8 @@ router.get('/profile/:id', async (req, res) => {
   }
 });
 
-// Order page load
-router.get('/orders/summary/:consumerId', async (req, res) => {
+// Single order load
+router.get('/single-orders/summary/:consumerId', async (req, res) => {
   const { consumerId } = req.params;
   const pool = req.app.locals.pool;
 
@@ -270,6 +408,35 @@ router.get('/orders/summary/:consumerId', async (req, res) => {
         fp.product_name,
         fp.image
       FROM consumer_orders co
+      JOIN farmers_products fp ON co.product_id = fp.id
+      WHERE co.consumer_id = ?
+      ORDER BY co.created_at DESC
+    `, [consumerId]);
+
+    res.json(orders);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+//Bulk order load
+router.get('/bulk-orders/summary/:consumerId', async (req, res) => {
+  const { consumerId } = req.params;
+  const pool = req.app.locals.pool;
+
+  try {
+    const [orders] = await pool.query(`
+      SELECT 
+        co.id AS order_id,
+        co.quantity,
+        co.status, -- ✅ new: order status
+        co.mobile_no,
+        co.created_at AS order_date,
+        fp.product_name,
+        fp.image
+      FROM consumer_bulk_orders co
       JOIN farmers_products fp ON co.product_id = fp.id
       WHERE co.consumer_id = ?
       ORDER BY co.created_at DESC

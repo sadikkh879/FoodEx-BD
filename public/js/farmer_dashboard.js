@@ -3,11 +3,25 @@ const farmerId= localStorage.getItem('farmerId');
 document.addEventListener('DOMContentLoaded', async () => {
     if (!farmerId) {
         alert('You must log in first.');
-        window.location.href = 'login.html';
+        window.location.href = 'farmer_login.html';
         return;
     }
     await loadProducts();
 });
+
+  document.getElementById('addBulkBtn').addEventListener('click', function(){
+      const addBulk = document.getElementById('add-product');
+      const addSingle = document.getElementById('single-product');
+      addBulk.style.display= 'block';
+      addSingle.style.display= 'none';
+  })
+
+    document.getElementById('addSingleBtn').addEventListener('click', function(){
+      const addSingle = document.getElementById('single-product');
+      const addBulk = document.getElementById('add-product');
+      addSingle.style.display= 'block';
+      addBulk.style.display= 'none';
+  })
 
 
 // Load products and show "View Orders" button
@@ -68,7 +82,7 @@ async function updateDeliveryStatus(productId, isDelivering) {
   }
 }
 
-
+// bulk product add handler
 document.getElementById('add-product-form').addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -93,6 +107,34 @@ document.getElementById('add-product-form').addEventListener('submit', async fun
         alert('Failed to add product.');
     }
 });
+
+//Add single product handler
+document.getElementById('addSingle-product-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    formData.append('farmerId', farmerId);
+
+    try {
+        const res = await fetch('/api/farmer/addSingle-product', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await res.json();
+        alert(data.message);
+
+        if (res.ok) {
+            await loadProducts();
+            this.reset();
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Failed to add product.');
+    }
+});
+
+
 
 //Slidebar handle
 const sidebar = document.getElementById("sidebar");

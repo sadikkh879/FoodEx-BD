@@ -177,32 +177,94 @@ body {
 /* === 4. Progress Bar Styles === */
 /* ================================== */
 
-.progress-bar {
-    width: 100%;
-    margin-top: 20px;
-    text-align: left;
+.productDetails {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+  animation: fadeIn 0.6s ease-out;
 }
 
-.progress-track {
-    width: 100%;
-    background-color: #e0e0e0;
-    border-radius: 5px;
-    overflow: hidden;
-    height: 15px;
+.productDetails h1 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #333;
 }
 
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(45deg, #2ecc71, #2575fc);
-    transition: width 0.5s ease-in-out;
-    border-radius: 5px;
+.productDetails img {
+  display: block;
+  max-width: 350px;      /* limit how wide it can get */
+  width: 100%;           /* responsive scaling */
+  height: auto;          /* keep aspect ratio */
+  margin: 0 auto 20px;   /* center and add bottom space */
+  border-radius: 10px;   /* rounded corners */
+  object-fit: cover;     /* crop if needed without distortion */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* subtle shadow */
+  transition: transform 0.3s ease;
 }
 
-.progress-bar p {
-    font-size: 0.9em;
-    color: #777;
-    margin-top: 5px;
+.productDetails img:hover {
+  transform: scale(1.03); /* gentle zoom on hover */
 }
+
+
+#productPrice {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #2e7d32;
+  margin-bottom: 10px;
+}
+
+#productDescription {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.productDetails p {
+  margin: 5px 0;
+}
+
+.productDetails button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+#orderBtn {
+  background: linear-gradient(45deg, #1de419, #078600);
+  color: white;
+}
+
+#orderBtn:hover {
+  background: linear-gradient(45deg, #078600, #1de419);
+  transform: translateY(-2px);
+}
+
+#orderTrackBtn {
+  background: linear-gradient(45deg, #2575fc, #6a11cb);
+  color: white;
+}
+
+#orderTrackBtn:hover {
+  background: linear-gradient(45deg, #6a11cb, #2575fc);
+  transform: translateY(-2px);
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 
 /* Modal background */
 .modal {
@@ -210,30 +272,209 @@ body {
   position: fixed;
   left: 0; top: 0;
   width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
   justify-content: center;
-  align-items: center;
+  align-items: flex-start; /* align to top instead of center */
+  overflow-y: auto; /* allow scrolling if content is tall */
+  padding: 30px 15px; /* space around modal */
   z-index: 9999;
+  box-sizing: border-box;
 }
 
-/* Modal box */
 .modal-content {
   background: #fff;
-  padding: 10px;
-  border-radius: 10px;
-  width: 90%;
+  padding: 25px 20px;
+  border-radius: 12px;
+  width: 100%;
   max-width: 550px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  animation: fadeIn 0.3s ease-in-out;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  animation: fadeInUp 0.4s ease;
+  font-family: 'Poppins', sans-serif;
+  max-height: 90vh; /* never exceed 90% of viewport height */
+  overflow-y: auto; /* scroll inside modal if needed */
 }
+
 
 /* Headings */
 .modal-content h3 {
   margin-top: 0;
-  color: #2e7d32; /* green tone */
-  font-weight: bold;
+  color: #2e7d32;
+  font-weight: 700;
   text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
 }
+
+/* Form fields inside modal */
+.modal-content label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #444;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.2);
+  outline: none;
+}
+
+/* Buttons */
+.modal-content .modal-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.modal-content button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.modal-content .submit-btn {
+  background: linear-gradient(45deg, #1de419, #078600);
+  color: white;
+}
+
+.modal-content .submit-btn:hover {
+  background: linear-gradient(45deg, #078600, #1de419);
+  transform: translateY(-2px);
+}
+
+.modal-content .cancel-btn {
+  background: #ccc;
+  color: #333;
+}
+
+.modal-content .cancel-btn:hover {
+  background: #bbb;
+  transform: translateY(-2px);
+}
+
+/* Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Flash animation for total price */
+@keyframes priceFlash {
+  0%   { background-color: #d4edda; } /* light green */
+  100% { background-color: transparent; }
+}
+
+.total-price.flash {
+  animation: priceFlash 0.6s ease;
+  border-radius: 6px;
+}
+
+
+#paymentOption, #transactionId {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  margin-top: 6px;
+  margin-bottom: 14px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#paymentOption:focus, #transactionId:focus {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46,125,50,0.2);
+  outline: none;
+}
+
+
+#paymentDetails {
+  background: #f9f9f9;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+#paymentDetails img {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+#transactionId {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  margin-top: 6px;
+}
+
+
+.progress-bar {
+  width: 100%;
+  margin-top: 20px;
+  text-align: left;
+}
+
+.progress-track {
+  width: 100%;
+  background-color: #f0f0f0;
+  border-radius: 50px;
+  overflow: hidden;
+  height: 18px;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2ecc71, #27ae60);
+  transition: width 1s ease-in-out;
+  border-radius: 50px;
+}
+
+.progress-bar p {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 8px;
+}
+#productPrice {
+  display: inline-block;
+  background: #ff5252;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+
+
 
 /* Labels & Inputs */
 .modal-content label {

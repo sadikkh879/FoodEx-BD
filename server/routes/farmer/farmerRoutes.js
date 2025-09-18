@@ -140,7 +140,7 @@ router.post('/order-status/:orderId', async (req, res) => {
 });
 
 
-// Add new product with image
+// Add new Bulk product with image
 router.post('/add-product', upload.single('productImage'), async (req, res) => {
   const { farmerId, productName, productDetails, deliveryLocation, price, minOrder, maxOrder } = req.body;
 
@@ -163,9 +163,9 @@ router.post('/add-product', upload.single('productImage'), async (req, res) => {
     // Save product to DB
     const pool = req.app.locals.pool;
     await pool.query(
-      `INSERT INTO farmers_products (farmer_id, product_name, product_details, delivery_location, price, min_order, max_order, image) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [farmerId, productName, productDetails, deliveryLocation, price, minOrder, maxOrder, imageUrl]
+      `INSERT INTO farmers_products (farmer_id, product_name, product_details, delivery_location, price, min_order, max_order, image, is_bulk) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [farmerId, productName, productDetails, deliveryLocation, price, minOrder, maxOrder, imageUrl, 1]
     );
 
     res.status(201).json({ message: 'Product added successfully' });
@@ -174,6 +174,44 @@ router.post('/add-product', upload.single('productImage'), async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+
+// Add new Single product with image
+router.post('/addSingle-product', upload.single('productImage'), async (req, res) => {
+  const { farmerId, productName, productDetails, price, storage } = req.body;
+
+  if (!farmerId || !productName || !productDetails || !price || !storage || !req.file) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  try {
+    // Upload to Azure Blob Storage
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    const blobName = `${Date.now()}-${req.file.originalname}`;
+    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+    await blockBlobClient.uploadData(req.file.buffer, {
+      blobHTTPHeaders: { blobContentType: req.file.mimetype }
+    });
+
+    const imageUrl = blockBlobClient.url;
+
+    // Save product to DB
+    const pool = req.app.locals.pool;
+    await pool.query(
+      `INSERT INTO farmers_products (farmer_id, product_name, product_details, price, storage, image, is_bulk) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [farmerId, productName, productDetails, price, storage, imageUrl, 0]
+    );
+
+    res.status(201).json({ message: 'Product added successfully' });
+  } catch (err) {
+    console.error('Upload or DB error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
 
 // delivery handle
 

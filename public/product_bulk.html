@@ -47,7 +47,7 @@
   <h1 id="productName"></h1>
   <img id="productImage" src="" alt="Product Image" />
   <p id="productPrice"></p>
-  <!-- <p id="productLocation"></p> -->
+  <p id="productLocation"></p>
   <p id="productDescription"></p>
   <p id="productIsDelivered"></p>
   <p>Minimun Order: 20kg <br>Max Order: 50kg</p>
@@ -63,59 +63,10 @@
     <label for="orderQty">Quantity (kg):</label>
     <input type="number" id="orderQty" min="10" max="20" required>
 
-    <!-- Total Price -->
-    <div class="total-price" id="total-price">
-      <p><strong>Total to Pay:</strong> <span id="totalPrice">0</span> tk</p>
-    </div>
-
     <label for="mobileNo">Contact No:</label>
     <input type="text" id="mobileNo" required>
 
-    <div class="location-group">
-  <label for="divisionSelect">Division:</label>
-  <select id="divisionSelect" required>
-    <option value="">-- Select Division --</option>
-  </select>
-
-  <label for="districtSelect">District:</label>
-  <select id="districtSelect" required disabled>
-    <option value="">-- Select District --</option>
-  </select>
-
-  <label for="upazilaSelect">Upazila:</label>
-  <select id="upazilaSelect" required disabled>
-    <option value="">-- Select Upazila --</option>
-  </select>
-
-  <label for="additionalLocation">Additional Location Info:</label>
-  <input type="text" id="additionalLocation" placeholder="e.g. House no, Road no, Area" disabled>
-
-<label for="deliveryOption">Delivery Option:</label>
-<select id="deliveryOption" required>
-  <option value="">-- Choose Delivery Option --</option>
-  <option value="home">Home Delivery</option>
-  <option value="courier">Nearest Courier Delivery</option>
-</select>
-
-  <!-- Payment Option -->
-  <label for="paymentOption">Payment Method:</label>
-  <select id="paymentOption" required>
-    <option value="">-- Choose payment method --</option>
-    <option value="cod">Cash on Delivery</option>
-    <option value="bkash">bKash</option>
-    <option value="nagad">Nagad</option>
-    <option value="card">Credit/Debit Card</option>
-  </select>
-
-<div id="paymentDetails" style="display:none; margin-top:15px;">
-  <p><strong>Scan the QR code below to pay:</strong></p>
-  <img id="paymentQR" src="" alt="Payment QR Code" style="max-width:200px; display:block; margin-bottom:10px;">
-  
-  <label for="transactionId">Transaction ID:</label>
-  <input type="text" id="transactionId" placeholder="Enter your payment transaction ID" required>
-</div>
-
-</div>    
+    
     <div class="modal-actions">
       <button id="submitOrder" class="btn btn-primary">Submit</button>
       <button id="cancelOrder" class="btn btn-secondary">Cancel</button>
@@ -138,6 +89,6 @@
       <a href="#"><i class="fab fa-instagram"></i></a>
     </div>
   </footer>
-  <script src="js/product.js"></script>
+  <script src="js/product_bulk.js"></script>
 </body>
 </html>

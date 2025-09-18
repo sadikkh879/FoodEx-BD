@@ -64,7 +64,7 @@ header {
 
 /* Dashboard Layout */
 .dashboard-wrapper {
-padding: 20px;
+/* padding: 10px; */
   margin-left: 0;
   transition: margin-left 0.3s ease;
 }

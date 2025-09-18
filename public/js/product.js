@@ -1,170 +1,198 @@
-const token = localStorage.getItem('token');
-const consumerId = localStorage.getItem('consumerId');
+// consumer-product.js (refactored)
 
-if (!consumerId) {
+const TOKEN = localStorage.getItem('token');
+const CONSUMER_ID = localStorage.getItem('consumerId');
+
+if (!CONSUMER_ID) {
   alert('You must log in first.');
   window.location.href = 'consumer_login.html';
 }
 
-//Slidebar handle
-const toggleBtn = document.getElementById("toggleBtn");
-const sidebar = document.getElementById("sidebar");
-const closeSidebar = document.getElementById("closeSidebar");
-const overlay = document.getElementById("sidebarOverlay");
+let productPrice = 0; // will be set when product loads
+let productIdFromUrl = new URLSearchParams(window.location.search).get('id');
 
-toggleBtn.addEventListener("click", () => {
-  sidebar.classList.add("active");
-  overlay.classList.add("active");
-});
+// ---------- helper ----------
+const $ = id => document.getElementById(id);
 
-closeSidebar.addEventListener("click", () => {
-  sidebar.classList.remove("active");
-  overlay.classList.remove("active");
-});
+// ---------- main init ----------
+document.addEventListener('DOMContentLoaded', init);
 
-overlay.addEventListener("click", () => {
-  sidebar.classList.remove("active");
-  overlay.classList.remove("active");
-});
+async function init() {
+  // Cache elements (safely)
+  const toggleBtn = $('toggleBtn');
+  const sidebar = $('sidebar');
+  const closeSidebar = $('closeSidebar');
+  const overlay = $('sidebarOverlay');
 
+  const logoutButton = $('logoutButton');
 
-// Logout Handle
-document.getElementById('logoutButton').addEventListener("click", function () {
-  const confirmLogout = confirm("Are you sure you want to logout?");
-  if (confirmLogout) {
-    localStorage.clear();
-    window.location.href = "consumer_login.html";
+  const qtyInput = $('orderQty');
+  const totalPriceEl = $('totalPrice');
+  const totalPriceContainer = $('total-price');
+
+  const orderModal = $('orderModal');
+  const orderBtn = $('orderBtn');
+  const submitOrderBtn = $('submitOrder');
+  const cancelOrderBtn = $('cancelOrder');
+  const orderTrackBtn = $('orderTrackBtn');
+
+  const divisionSelect = $('divisionSelect');
+  const districtSelect = $('districtSelect');
+  const upazilaSelect = $('upazilaSelect');
+  const additionaInfo = $('additionalLocation');
+
+  const paymentSelect = $('paymentOption');
+  const paymentDetails = $('paymentDetails');
+  const paymentQR = $('paymentQR');
+  const transactionIdInput = $('transactionId');
+
+  // guard: required elements may not exist on all pages
+  setupSidebar(toggleBtn, sidebar, closeSidebar, overlay);
+  setupLogout(logoutButton);
+
+  // Load UI data and attach listeners
+  await loadProductDetails(productIdFromUrl); // sets productPrice and product display
+  loadDivisions(); // location API
+
+  // Ensure quantity listener is attached only once
+  if (qtyInput && totalPriceEl && totalPriceContainer) {
+    qtyInput.addEventListener('input', () => {
+      const qtyNum = parseInt(qtyInput.value) || 0;
+      const payPrice = (productPrice || 0) * qtyNum;
+      totalPriceEl.textContent = payPrice.toFixed(2);
+
+      // flash animation restart
+      totalPriceContainer.classList.remove('flash');
+      void totalPriceContainer.offsetWidth;
+      totalPriceContainer.classList.add('flash');
+    });
   }
-});
 
-const params = new URLSearchParams(window.location.search);
-const productId = params.get('id');
+  // Order modal open/close
+  if (orderBtn && orderModal) {
+    orderBtn.addEventListener('click', () => orderModal.style.display = 'flex');
+  }
+  if (cancelOrderBtn && orderModal) {
+    cancelOrderBtn.addEventListener('click', () => orderModal.style.display = 'none');
+  }
 
-async function loadProductDetails() {
+  // Payment selection handling
+  setupPaymentSelection(paymentSelect, paymentDetails, paymentQR);
+
+  // Location dropdown change handlers
+  if (divisionSelect) divisionSelect.addEventListener('change', e => loadDistricts(e.target.value));
+  if (districtSelect) districtSelect.addEventListener('change', e => loadUpazilas(e.target.value));
+
+  // Submit order
+  if (submitOrderBtn) {
+    submitOrderBtn.addEventListener('click', async () => {
+      await handleSubmitOrder({
+        consumerId: CONSUMER_ID,
+        token: TOKEN,
+        productId: productIdFromUrl,
+        qtyInput,
+        divisionSelect,
+        districtSelect,
+        upazilaSelect,
+        additionaInfo,
+        paymentSelect,
+        transactionIdInput,
+        totalPriceEl
+      }, orderModal);
+    });
+  }
+
+  // Check if already ordered (shows track button etc.)
+  await checkIfOrdered(CONSUMER_ID, productIdFromUrl);
+
+  // track order button handle
+  if (orderTrackBtn) {
+    orderTrackBtn.addEventListener('click', () => window.location.href = 'consumer_order.html');
+  }
+}
+
+// ---------- small modules ----------
+function setupSidebar(toggleBtn, sidebar, closeSidebar, overlay) {
+  if (!toggleBtn || !sidebar || !closeSidebar || !overlay) return;
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.add('active');
+    overlay.classList.add('active');
+  });
+  closeSidebar.addEventListener('click', () => {
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('active');
+    overlay.classList.remove('active');
+  });
+}
+
+function setupLogout(button) {
+  if (!button) return;
+  button.addEventListener('click', () => {
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      localStorage.clear();
+      window.location.href = 'consumer_login.html';
+    }
+  });
+}
+
+function setupPaymentSelection(paymentSelect, paymentDetails, paymentQR) {
+  if (!paymentSelect) return;
+  paymentSelect.addEventListener('change', () => {
+    const method = paymentSelect.value;
+    if (method === 'bkash' || method === 'nagad') {
+      if (paymentQR) paymentQR.src = 'https://foodeximages.blob.core.windows.net/consumer-profiles/6226763403452598521.jpg';
+      if (paymentDetails) paymentDetails.style.display = 'block';
+    } else {
+      if (paymentDetails) paymentDetails.style.display = 'none';
+    }
+  });
+}
+
+// ---------- product & UI loading ----------
+async function loadProductDetails(productId) {
+  if (!productId) {
+    console.warn('No product id in URL');
+    return;
+  }
+
   try {
     const res = await fetch(`/api/consumer/singleProduct/${productId}`);
     if (!res.ok) throw new Error('Product not found');
 
     const product = await res.json();
+    productPrice = parseFloat(product.price) || 0;
 
-    document.getElementById('productName').textContent = product.product_name;
-    document.getElementById('productImage').src = `${product.image}`;
-    document.getElementById('productImage').alt = product.product_name;
-    document.getElementById('productPrice').textContent = `Price: ${product.price}tk`;
-    document.getElementById('productLocation').textContent = `Delivery Location: ${product.delivery_location} hub`;
-    document.getElementById('productDescription').textContent = product.product_details || 'No description available.';
-    // const status = document.createElement('p');
-    // status.textContent = '🚚 Delivery in progress';
-    // status.style.color = '#28a745';
-    // status.style.fontWeight = 'bold';
-    // document.getElementById('productIsDelivered').appendChild(status); // or any container you use
-
+    const nameEl = $('productName');
+    const imageEl = $('productImage');
+    const priceEl = $('productPrice');
+    const descEl = $('productDescription');
+    if (nameEl) nameEl.textContent = product.product_name || 'Unnamed product';
+    if (imageEl) {
+      imageEl.src = product.image || '';
+      imageEl.alt = product.product_name || 'product image';
+    }
+    if (priceEl) priceEl.textContent = `Price: ${product.price}tk`;
+    if (descEl) descEl.textContent = product.product_details || 'No description available.';
   } catch (err) {
     console.error(err);
     alert('Error loading product details.');
   }
 }
 
-
-// Order Modal
-const orderModal = document.getElementById('orderModal');
-const orderBtn = document.getElementById('orderBtn');
-const submitOrderBtn = document.getElementById('submitOrder');
-const cancelOrderBtn = document.getElementById('cancelOrder');
-
-orderBtn.addEventListener('click', () => {
-  orderModal.style.display = 'flex';
-});
-
-cancelOrderBtn.addEventListener('click', () => {
-  orderModal.style.display = 'none';
-});
-
-// Order Submission
-submitOrderBtn.addEventListener('click', async () => {
-  const consumerId = localStorage.getItem('consumerId');
-  const token = localStorage.getItem('token');
-  const params = new URLSearchParams(window.location.search);
-  const productId = params.get('id');
-
-  const qtyNum = parseInt(document.getElementById('orderQty').value);
-  const mobileNo = document.getElementById('mobileNo').value.trim();
-
-  // New location fields
-const divisionName = divisionSelect.options[divisionSelect.selectedIndex].text;
-const districtName = districtSelect.options[districtSelect.selectedIndex].text;
-const upazilaName = upazilaSelect.options[upazilaSelect.selectedIndex].text;
-const additionalLocation = document.getElementById('additionalLocation').value.trim();
-
-  // Basic checks
-  if (!consumerId || !productId) {
-    alert('Missing consumer or product info.');
-    return;
-  }
-
-  if (isNaN(qtyNum) || qtyNum < 20 || qtyNum > 50) {
-    alert('Please enter a valid quantity between 20kg and 50kg.');
-    return;
-  }
-
-  if (!mobileNo || !divisionName || !districtName || !upazilaName) {
-    alert('Please select your all the field');
-    return;
-  }
-
-  if (!additionalLocation) {
-    alert('Please enter additional location details (e.g., house no, road no, area).');
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/consumer/orders', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + token
-      },
-      body: JSON.stringify({
-        consumer_id: consumerId,
-        product_id: productId,
-        quantity: qtyNum,
-        mobile_no: mobileNo,
-        division_name: divisionName,
-        district_name: districtName,
-        upazila_name: upazilaName,
-        additional_location: additionalLocation
-      })
-    });
-
-    if (res.ok) {
-      alert('✅ Order placed successfully!');
-      orderModal.style.display = 'none';
-      window.location.reload();
-    } else {
-      const err = await res.json();
-      alert('❌ Order failed: ' + err.message);
-    }
-  } catch (err) {
-    console.error(err);
-    alert('Server error while placing order.');
-  }
-});
-
-
-// location dropdown
-const divisionSelect = document.getElementById('divisionSelect');
-const districtSelect = document.getElementById('districtSelect');
-const upazilaSelect = document.getElementById('upazilaSelect');
-const additionaInfo = document.getElementById('additionalLocation');
-
-// Load Divisions
+// ---------- location APIs ----------
 async function loadDivisions() {
+  const divisionSelect = $('divisionSelect');
+  if (!divisionSelect) return;
   try {
     const res = await fetch('https://sohojapi.vercel.app/api/divisions');
     const divisions = await res.json();
     divisions.forEach(div => {
       const opt = document.createElement('option');
-      opt.value = div.id; // store ID for next API call
+      opt.value = div.id;
       opt.textContent = `${div.name} (${div.bn_name})`;
       divisionSelect.appendChild(opt);
     });
@@ -173,8 +201,12 @@ async function loadDivisions() {
   }
 }
 
-// Load Districts for selected Division
 async function loadDistricts(divisionId) {
+  const districtSelect = $('districtSelect');
+  const upazilaSelect = $('upazilaSelect');
+  const additionaInfo = $('additionalLocation');
+  if (!districtSelect || !upazilaSelect) return;
+
   districtSelect.innerHTML = '<option value="">-- Select District --</option>';
   upazilaSelect.innerHTML = '<option value="">-- Select Upazila --</option>';
   upazilaSelect.disabled = true;
@@ -199,10 +231,12 @@ async function loadDistricts(divisionId) {
   }
 }
 
-// Load Upazilas for selected District
 async function loadUpazilas(districtId) {
-  upazilaSelect.innerHTML = '<option value="">-- Select Upazila --</option>';
+  const upazilaSelect = $('upazilaSelect');
+  const additionaInfo = $('additionalLocation');
+  if (!upazilaSelect) return;
 
+  upazilaSelect.innerHTML = '<option value="">-- Select Upazila --</option>';
   if (!districtId) {
     upazilaSelect.disabled = true;
     return;
@@ -218,65 +252,111 @@ async function loadUpazilas(districtId) {
       upazilaSelect.appendChild(opt);
     });
     upazilaSelect.disabled = false;
-    additionaInfo.disabled = false;
+    if (additionaInfo) additionaInfo.disabled = false;
   } catch (err) {
     console.error('Error loading upazilas:', err);
   }
 }
 
-// Event listeners
-divisionSelect.addEventListener('change', e => loadDistricts(e.target.value));
-districtSelect.addEventListener('change', e => loadUpazilas(e.target.value));
+// ---------- order submission ----------
+async function handleSubmitOrder(ctx, orderModal) {
+  const {
+    consumerId, token, productId,
+    qtyInput, divisionSelect, districtSelect,
+    upazilaSelect, additionaInfo,
+    paymentSelect, transactionIdInput
+  } = ctx;
 
-// Init
-document.addEventListener('DOMContentLoaded', loadDivisions);
+  if (!consumerId || !productId) {
+    alert('Missing consumer or product info.');
+    return;
+  }
 
-// Check if already ordered
-async function checkIfOrdered() {
-  const consumerId = localStorage.getItem('consumerId');
-  const productId = new URLSearchParams(window.location.search).get('id');
+  const qtyNum = parseInt(qtyInput?.value || '0', 10);
+  const mobileNo = ($('mobileNo') && $('mobileNo').value) ? $('mobileNo').value.trim() : '';
 
-  const res = await fetch(`/api/consumer/orders/check?consumer_id=${consumerId}&product_id=${productId}`);
-  const data = await res.json();
+  const divisionName = divisionSelect?.options[divisionSelect.selectedIndex]?.text || '';
+  const districtName = districtSelect?.options[districtSelect.selectedIndex]?.text || '';
+  const upazilaName = upazilaSelect?.options[upazilaSelect.selectedIndex]?.text || '';
+  const additionalLocation = additionaInfo?.value.trim() || '';
+  const paymentMethod = paymentSelect?.value || '';
+  const transactionId = transactionIdInput?.value.trim() || '';
 
- if (data.ordered) {
-    const orderBtn = document.getElementById('orderBtn');
-    const trackBtn = document.getElementById('orderTrackBtn');
+  // validation
+  if (isNaN(qtyNum) || qtyNum < 20 || qtyNum > 50) {
+    alert('Please enter a valid quantity between 20kg and 50kg.');
+    return;
+  }
+  if (!mobileNo || !divisionName || !districtName || !upazilaName) {
+    alert('Please select all location fields and enter a mobile number.');
+    return;
+  }
+  if (!additionalLocation) {
+    alert('Please enter additional location details (e.g., house no, road no, area).');
+    return;
+  }
+  if (!paymentMethod) {
+    alert('Please select a payment method.');
+    return;
+  }
+  if ((paymentMethod === 'bkash' || paymentMethod === 'nagad') && !transactionId) {
+    alert('Please enter your transaction ID.');
+    return;
+  }
 
-    orderBtn.disabled = true;
-    orderBtn.textContent = 'Already Ordered';
-    trackBtn.style.display = 'block'; // ✅ correct way
+  // submit
+  try {
+    const res = await fetch('/api/consumer/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token
+      },
+      body: JSON.stringify({
+        consumer_id: consumerId,
+        product_id: productId,
+        quantity: qtyNum,
+        mobile_no: mobileNo,
+        division_name: divisionName,
+        district_name: districtName,
+        upazila_name: upazilaName,
+        additional_location: additionalLocation,
+        payment_method: paymentMethod,
+        transaction_id: transactionId || null
+      })
+    });
+
+    if (res.ok) {
+      alert('✅ Order placed successfully!');
+      if (orderModal) orderModal.style.display = 'none';
+      window.location.reload();
+    } else {
+      const err = await res.json().catch(() => ({ message: 'Unknown error' }));
+      alert('❌ Order failed: ' + (err.message || 'Unknown error'));
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Server error while placing order.');
   }
 }
-checkIfOrdered();
 
-// track order button handle
-document.getElementById('orderTrackBtn').addEventListener("click", function () {
-    window.location.href = "consumer_order.html";
-});
-
-async function loadOrderProgress() {
-  const productId = new URLSearchParams(window.location.search).get('id');
-  const res = await fetch(`/api/consumer/products/${productId}/progress`, {
-    headers: {
-      Authorization: 'Bearer ' + localStorage.getItem('token')
+// ---------- check if already ordered ----------
+async function checkIfOrdered(consumerId, productId) {
+  if (!consumerId || !productId) return;
+  try {
+    const res = await fetch(`/api/consumer/orders/check?consumer_id=${consumerId}&product_id=${productId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.ordered) {
+      const orderBtn = $('orderBtn');
+      const trackBtn = $('orderTrackBtn');
+      if (orderBtn) {
+        orderBtn.disabled = true;
+        orderBtn.textContent = 'Already Ordered';
+      }
+      if (trackBtn) trackBtn.style.display = 'block';
     }
-  });
-
-  const data = await res.json();
-
-  const progressBar = document.createElement('div');
-  progressBar.className = 'progress-bar';
-
-  progressBar.innerHTML = `
-    <div class="progress-track">
-      <div class="progress-fill" style="width: ${data.progressPercent}%"></div>
-    </div>
-    <p>${data.totalOrdered}kg ordered out of minimum ${data.minOrder}kg required to process the delivery</p>
-  `;
-
-  document.querySelector('.productDetails').appendChild(progressBar);
+  } catch (err) {
+    console.error('Error checking order status:', err);
+  }
 }
-loadOrderProgress();
-
-document.addEventListener('DOMContentLoaded', loadProductDetails);
