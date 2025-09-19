@@ -43,21 +43,36 @@
 <!-- Overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+    <section id="hero">
+      <div class="overlay">
+        <h1>Connecting Farmers to Your Doorstep</h1>
+        <p>Fresh produce, delivered directly from farm to consumer. Say goodbye to middlemen and hello to fair prices.</p>
+        <a href="#" class="cta-button">Explore Products</a>
+      </div>
+    </section>
+
 
     <div class="content">
     <main>
         <section class="product-list">
-            <h2>Latest Products</h2>
-            <div id="products-container" class="products-grid"></div>
+          <h2>Latest Products</h2>
+          <div class="slider-wrapper">
+            <button class="slider-btn prev" data-target="products-container">&#10094;</button>
+            <div id="products-container" class="products-grid product-slider"></div>
+            <button class="slider-btn next" data-target="products-container">&#10095;</button>
+          </div>
         </section>
     </main>
 
     <main>
-        <section class="product-list">
-            <h2>Bulk Products</h2>
-            <div id="bulk-products" class="products-grid"></div>
-        </section>
-    </main>
+      <section class="product-list">
+        <h2>Bulk Products</h2>
+        <div class="slider-wrapper">
+          <button class="slider-btn prev" data-target="bulk-products">&#10094;</button>
+          <div id="bulk-products" class="products-grid product-slider"></div>
+          <button class="slider-btn next" data-target="bulk-products">&#10095;</button>
+        </div>
+      </section>
 
     <!-- Why Choose Us -->
     <section class="why-choose">

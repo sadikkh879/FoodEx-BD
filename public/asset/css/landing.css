@@ -242,6 +242,14 @@ nav {
   background: linear-gradient(45deg, #1de419, #078600);
 }
 
+#product_details {
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* number of lines to show */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 
 
 #features .features-grid {

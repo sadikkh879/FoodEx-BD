@@ -23,16 +23,21 @@ const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZU
 // }
 
 
-// Fetch all single products from all farmers
+// Fetch single products with pagination
 router.get('/products', async (req, res) => {
   try {
     const pool = req.app.locals.pool;
+    const limit = parseInt(req.query.limit) || 8;
+    const offset = parseInt(req.query.offset) || 0;
+
     const [results] = await pool.query(`
       SELECT fp.*, f.location
       FROM farmers_products fp
       JOIN farmers f ON fp.farmer_id = f.id
       WHERE fp.is_bulk = 0
-    `);
+      LIMIT ? OFFSET ?
+    `, [limit, offset]);
+
     res.json(results);
   } catch (err) {
     console.error(err);
@@ -40,23 +45,28 @@ router.get('/products', async (req, res) => {
   }
 });
 
-
-// Fetch all bulk products from all farmers
+// Fetch bulk products with pagination
 router.get('/bulk-products', async (req, res) => {
-    try {
+  try {
     const pool = req.app.locals.pool;
+    const limit = parseInt(req.query.limit) || 8;
+    const offset = parseInt(req.query.offset) || 0;
+
     const [results] = await pool.query(`
-       SELECT fp.*, f.location
+      SELECT fp.*, f.location
       FROM farmers_products fp
       JOIN farmers f ON fp.farmer_id = f.id
       WHERE fp.is_bulk = 1
-    `);
+      LIMIT ? OFFSET ?
+    `, [limit, offset]);
+
     res.json(results);
-} catch (err) {
+  } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Database error' });
-}
+  }
 });
+
 
 router.get('/singleProduct/:id', async (req, res) => {
   const productId = req.params.id;
@@ -127,10 +137,10 @@ router.post('/orders', async (req, res) => {
 
 //Bulk order backend request
 router.post('/bulk-orders', async (req, res) => {
-  const { product_id, quantity, mobile_no, consumer_id} = req.body;
+  const { product_id, quantity, mobile_no, consumer_id, payment_method,  transaction_id, delivery_option} = req.body;
   const pool = req.app.locals.pool;
 
-  if(!product_id || !quantity || !mobile_no || !consumer_id){
+  if(!product_id || !quantity || !mobile_no || !consumer_id || !payment_method || !delivery_option){
     return res.status(400).json({ message: 'All fields are required' });
   }
 
@@ -164,9 +174,9 @@ router.post('/bulk-orders', async (req, res) => {
     // Save the order with delivery location
     await pool.execute(
   `INSERT INTO consumer_bulk_orders
-    (consumer_id, product_id, quantity, mobile_no) 
-   VALUES (?, ?, ?, ?)`,
-  [consumer_id, product_id, quantity, mobile_no]
+    (consumer_id, product_id, quantity, mobile_no, payment_method, transaction_id, elivery_option) 
+   VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  [consumer_id, product_id, quantity, mobile_no, payment_method, transaction_id, delivery_option]
 );
 
     res.json({ message: '✅ Order placed successfully!' });

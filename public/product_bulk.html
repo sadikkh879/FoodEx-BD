@@ -5,6 +5,7 @@
     <title>Document</title>
     <link rel="stylesheet" href="asset/css/consumer_dashboard.css">
     <link rel="stylesheet" href="asset/css/product.css">
+    <link rel="stylesheet" href="asset/css/landing.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -50,7 +51,6 @@
   <p id="productLocation"></p>
   <p id="productDescription"></p>
   <p id="productIsDelivered"></p>
-  <p>Minimun Order: 20kg <br>Max Order: 50kg</p>
   <button id="orderBtn">Order Now</button>
   <button id="orderTrackBtn" style="display: none;">Track your order!</button>
 </div>
@@ -63,8 +63,38 @@
     <label for="orderQty">Quantity (kg):</label>
     <input type="number" id="orderQty" min="10" max="20" required>
 
+    <!-- Total Price -->
+    <div class="total-price" id="total-price">
+      <p><strong>Total to Pay:</strong> <span id="totalPrice">0</span> tk</p>
+    </div>
+
     <label for="mobileNo">Contact No:</label>
     <input type="text" id="mobileNo" required>
+
+    <label for="deliveryOption">Delivery Option:</label>
+      <select id="deliveryOption" required>
+        <option value="">-- Choose Delivery Option --</option>
+        <option value="home">Home Delivery</option>
+        <option value="courier">Collect from nearest hub</option>
+      </select>
+
+        <!-- Payment Option -->
+  <label for="paymentOption">Payment Method:</label>
+  <select id="paymentOption" required>
+    <option value="">-- Choose payment method --</option>
+    <option value="cod">Cash on Delivery</option>
+    <option value="bkash">bKash</option>
+    <option value="nagad">Nagad</option>
+    <option value="card">Credit/Debit Card</option>
+  </select>
+
+<div id="paymentDetails" style="display:none; margin-top:15px;">
+  <p><strong>Scan the QR code below to pay:</strong></p>
+  <img id="paymentQR" src="" alt="Payment QR Code" style="max-width:200px; display:block; margin-bottom:10px;">
+  
+  <label for="transactionId">Transaction ID:</label>
+  <input type="text" id="transactionId" placeholder="Enter your payment transaction ID" required>
+</div>
 
     
     <div class="modal-actions">
@@ -73,6 +103,15 @@
     </div>
   </div>
 </div>
+
+<section id="product-showcase" class="section-container">
+      <h2>Similar Products</h2>
+      <div class="slider-wrapper">
+        <div class="product-slider" id="productSlider">
+          <!-- Product cards will be injected here -->
+        </div>
+      </div>
+    </section>
 
 
   <!-- Footer -->

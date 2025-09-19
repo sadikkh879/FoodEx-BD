@@ -12,7 +12,7 @@
     <nav>
       <div class="logo">
         <a href="landing.html"> 
-        <img id="logoPic" src="https://foodeximages.blob.core.windows.net/product-images/Copilot_20250817_120838-Photoroom.png" alt="logo">   
+        <img id="logoPic" src="https://foodeximages.blob.core.windows.net/consumer-profiles/Copilot_20250817_120838-Photoroom.png" alt="logo">   
         </a>    
       </div>
 
@@ -51,9 +51,18 @@
     </section>
 
     <section id="product-showcase" class="section-container">
-      <h2>Fresh From Our Farmers</h2>
+      <h2>Latest From Our Farmers</h2>
       <div class="slider-wrapper">
         <div class="product-slider" id="productSlider">
+          <!-- Product cards will be injected here -->
+        </div>
+      </div>
+    </section>
+
+    <section id="product-showcase" class="section-container">
+      <h2>Most popular</h2>
+      <div class="slider-wrapper">
+        <div class="product-slider" id="popularProductSlider">
           <!-- Product cards will be injected here -->
         </div>
       </div>
@@ -214,7 +223,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   card.innerHTML = `
     <img src="${p.image}" alt="${p.product_name}" />
     <h3>${p.product_name}</h3>
-    <p>${p.product_details}</p>
+    <p id="product_details">${p.product_details}</p>
     <p><strong>${p.price} Tk</strong></p>
     <button class="landingProductBtn">Get Now</button>
   `;
@@ -235,6 +244,43 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (err) {
     console.error('Failed to load products:', err);
   }
+
+//Popular Product
+
+try {
+    const res = await fetch('/api/consumer/bulk-products');
+    const products = await res.json();
+    const slider = document.getElementById('popularProductSlider');
+
+    const createCard = (p) => {
+  const card = document.createElement('div');
+  card.classList.add('product-card');
+  card.innerHTML = `
+    <img src="${p.image}" alt="${p.product_name}" />
+    <h3>${p.product_name}</h3>
+    <p id="product_details">${p.product_details}</p>
+    <p><strong>${p.price} Tk</strong></p>
+    <button class="landingProductBtn">Get Now</button>
+  `;
+
+  // Attach click event to the button
+  card.querySelector('.landingProductBtn').addEventListener('click', () => {
+    window.location.href = 'consumer_login.html';
+  });
+
+  return card;
+};
+    // Append original products
+    products.forEach(p => slider.appendChild(createCard(p)));
+
+    // Duplicate for seamless loop
+    products.forEach(p => slider.appendChild(createCard(p)));
+
+  } catch (err) {
+    console.error('Failed to load products:', err);
+  }
+
+
 });
 
 const hamburgerBtn = document.getElementById('hamburgerBtn');

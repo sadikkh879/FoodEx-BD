@@ -14,6 +14,50 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+#hero h1 {
+  font-size: 3.5rem;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+#hero p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  color: #fff;
+}
+
+
+#hero {
+  height: 100vh;
+  background: 
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url("https://cdn.pixabay.com/photo/2022/01/06/19/23/shepherd-6920164_1280.jpg") 
+    center/cover no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #fff;
+}
+
+.cta-button {
+  display: inline-block;
+  background-color: #2ecc71;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+}
+
+.cta-button:hover {
+  background-color: #27ae60;
+  transform: translateY(-2px);
+}
+
+
 .content {
     flex-grow: 1;
     padding: 20px;
@@ -108,6 +152,24 @@ nav {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
+.product-slider-animate {
+  display: flex;
+  gap: 20px;
+  animation: slideIn 0.6s ease forwards;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+
 /* Slidebar */
 /* Sidebar base */
 .sidebar {
@@ -187,11 +249,17 @@ nav {
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 30px;
   margin-top: 20px;
   justify-content: center;
 }
+
+.products-grid:not(.product-slider-animate) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
+}
+
 
 /* Card animation on load */
 .product-card {
@@ -200,7 +268,8 @@ nav {
   border-radius: 12px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
   text-align: left;
-  max-width: 220px;
+  max-width: 120px;
+  max-width: none;
   opacity: 0;
   transform: translateY(20px);
   animation: fadeInUp 0.6s ease forwards;
@@ -213,10 +282,12 @@ nav {
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
 }
 
+
+
 /* Image hover zoom */
 .product-card img {
   width: 100%;
-  height: 200px;
+  height: 250px;
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 15px;
@@ -239,6 +310,126 @@ nav {
   color: #555;
   margin: 5px 0 10px;
 }
+
+#product_details {
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* number of lines to show */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#product_name{
+  display: -webkit-box;
+  -webkit-line-clamp: 1; /* number of lines to show */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* slider button styles */
+.slider-wrapper {
+  position: relative; /* required so buttons can position absolutely */
+}
+
+/* base button */
+.slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 60;
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(245,247,250,0.9));
+  box-shadow: 0 8px 22px rgba(8, 15, 30, 0.12);
+  transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+  color: #0f172a;
+  backdrop-filter: blur(6px); /* subtle glass effect on supporting browsers */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* left / right positions */
+.slider-btn.prev { left: 10px; }
+.slider-btn.next { right: 10px; }
+
+/* hover and active */
+.slider-btn:hover {
+  transform: translateY(-50%) scale(1.06);
+  box-shadow: 0 12px 30px rgba(8, 15, 30, 0.18);
+}
+.slider-btn:active {
+  transform: translateY(-50%) scale(0.98);
+}
+
+/* focus (keyboard accessible) */
+.slider-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.18);
+}
+
+/* disabled state */
+.slider-btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: translateY(-50%) scale(1);
+  box-shadow: none;
+}
+
+/* optional variant if you want colored arrows (green theme) */
+.slider-btn.green {
+  background: linear-gradient(135deg, #2ecc71, #078600);
+  color: #fff;
+  box-shadow: 0 10px 26px rgba(6, 86, 32, 0.18);
+}
+
+/* Make sure buttons don't overlap too much on small screens */
+@media (max-width: 640px) {
+  .slider-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 1.05rem;
+    left: 8px;
+    right: 8px;
+  }
+  .slider-btn.prev { left: 6px; }
+  .slider-btn.next { right: 6px; }
+}
+
+
+
+.load-more-btn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+}
+.load-more-btn:hover {
+  background-color: #218838;
+}
+
+.product_details {
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* number of lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 3.6em; /* keeps height consistent */
+}
+
+
 
 /* Price styling */
 #mPrice {
