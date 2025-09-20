@@ -29,7 +29,7 @@ const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZU
 
 
 
-// Fetch all products for logged-in farmer with orders & delivery locations
+// Fetch single products for logged-in farmer with orders & delivery locations
 router.get('/products/:farmerId', async (req, res) => {
   const { farmerId } = req.params;
   const pool = req.app.locals.pool;
@@ -37,7 +37,57 @@ router.get('/products/:farmerId', async (req, res) => {
   try {
     // Get all products for this farmer
     const [products] = await pool.query(
-      'SELECT * FROM farmers_products WHERE farmer_id = ?',
+      'SELECT * FROM farmers_products WHERE farmer_id = ? AND is_bulk = 0',
+      [farmerId]
+    );
+
+    const enrichedProducts = [];
+
+    for (const product of products) {
+      // Get all orders for this product with consumer info & delivery location
+      const [orders] = await pool.query(
+        `SELECT 
+           co.id AS order_id,
+           co.quantity,
+           co.created_at AS order_date,
+           co.division_name,
+           co.district_name,
+           co.upazila_name,
+           co.additional_location,
+           c.name AS consumer_name
+         FROM consumer_orders co
+         JOIN consumers c ON co.consumer_id = c.id
+         WHERE co.product_id = ?
+         ORDER BY co.created_at DESC`,
+        [product.id]
+      );
+
+      // Calculate total ordered from these orders
+      const totalOrdered = orders.reduce((sum, o) => sum + o.quantity, 0);
+
+      enrichedProducts.push({
+        ...product,
+        totalOrdered,
+        orders // full list of orders with location details
+      });
+    }
+
+    res.json(enrichedProducts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Database error' });
+  }
+});
+
+//bulk products fetch
+router.get('/bulk-products/:farmerId', async (req, res) => {
+  const { farmerId } = req.params;
+  const pool = req.app.locals.pool;
+
+  try {
+    // Get all products for this farmer
+    const [products] = await pool.query(
+      'SELECT * FROM farmers_products WHERE farmer_id = ? AND is_bulk = 1',
       [farmerId]
     );
 

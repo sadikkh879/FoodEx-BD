@@ -109,6 +109,14 @@ button:active {
   transform: scale(0.97);
 }
 
+#product_details {
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* number of lines to show */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* =========================
    SIDEBAR
 ========================= */

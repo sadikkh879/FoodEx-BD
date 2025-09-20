@@ -27,7 +27,7 @@ try {
 
     // Create status dropdown
     const statusSelect = document.createElement('select');
-    ['In Progress', 'Packaging', 'On the Way', 'Delivered'].forEach(status => {
+    ['In Progress', 'Packaging', 'On the Way', 'Delivered', 'Cancel'].forEach(status => {
       const option = document.createElement('option');
       option.value = status;
       option.textContent = status;

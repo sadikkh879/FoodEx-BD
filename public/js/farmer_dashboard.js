@@ -41,19 +41,22 @@ async function loadProducts() {
       card.innerHTML = `
         <img src="${p.image}" alt="${p.product_name}" />
         <h3>${p.product_name}</h3>
-        <p>${p.product_details}</p>
+        <p id="product_details">${p.product_details}</p>
         <p><strong>Price:</strong> ${p.price} Tk</p>
         <p><strong>Ordered:</strong> ${p.totalOrdered} kg</p>
       `;
 
       // View Orders button
       const viewOrdersBtn = document.createElement('button');
+      const deleteOrdersBtn = document.createElement('button');
       viewOrdersBtn.textContent = '📦 View Orders';
+      deleteOrdersBtn.textContent= 'Delete'
       viewOrdersBtn.classList.add('view-orders-btn');
       viewOrdersBtn.addEventListener('click', () => {
         window.location.href = `farmer_order_tracking.html?productId=${p.id}`;
       });
       card.appendChild(viewOrdersBtn);
+      card.appendChild(deleteOrdersBtn);
 
       container.appendChild(card);
     });
@@ -62,6 +65,47 @@ async function loadProducts() {
     console.error(err);
     alert('Error loading products.');
   }
+
+  try {
+    const res = await fetch(`/api/farmer/bulk-products/${farmerId}`);
+    const products = await res.json();
+
+    const container = document.querySelector('#bulk-products-container');
+    container.innerHTML = '';
+
+    products.forEach(p => {
+      const card = document.createElement('div');
+      card.classList.add('product-card');
+
+      // Product info
+      card.innerHTML = `
+        <img src="${p.image}" alt="${p.product_name}" />
+        <h3>${p.product_name}</h3>
+        <p id="product_details">${p.product_details}</p>
+        <p><strong>Price:</strong> ${p.price} Tk</p>
+        <p><strong>Ordered:</strong> ${p.totalOrdered} kg</p>
+      `;
+
+      // View Orders button
+      const viewOrdersBtn = document.createElement('button');
+      const deleteOrdersBtn = document.createElement('button');
+      viewOrdersBtn.textContent = '📦 View Orders';
+      deleteOrdersBtn.textContent= 'Delete';
+      viewOrdersBtn.classList.add('view-orders-btn');
+      viewOrdersBtn.addEventListener('click', () => {
+        window.location.href = `farmer_order_tracking.html?productId=${p.id}`;
+      });
+      card.appendChild(viewOrdersBtn);
+      card.appendChild(deleteOrdersBtn);
+
+      container.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error(err);
+    alert('Error loading products.');
+  }
+
 }
 
 
