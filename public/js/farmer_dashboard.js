@@ -21,14 +21,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Bulk product form handler
-    let bulkSubmitting = false;
     document.getElementById('add-product-form').addEventListener('submit', async function (e) {
         e.preventDefault();
-        if (bulkSubmitting) return;
-        bulkSubmitting = true;
 
         const submitBtn = this.querySelector('button[type="submit"]');
-        if (submitBtn) submitBtn.disabled = true;
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Adding...';
 
         const formData = new FormData(this);
         formData.append('farmerId', farmerId);
@@ -49,20 +48,19 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(err);
             alert('Failed to add product.');
         } finally {
-            bulkSubmitting = false;
-            if (submitBtn) submitBtn.disabled = false;
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
         }
     });
 
     // Single product form handler
-    let singleSubmitting = false;
     document.getElementById('addSingle-product-form').addEventListener('submit', async function (e) {
         e.preventDefault();
-        if (singleSubmitting) return;
-        singleSubmitting = true;
 
         const submitBtn = this.querySelector('button[type="submit"]');
-        if (submitBtn) submitBtn.disabled = true;
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Adding...';
 
         const formData = new FormData(this);
         formData.append('farmerId', farmerId);
@@ -83,8 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(err);
             alert('Failed to add product.');
         } finally {
-            singleSubmitting = false;
-            if (submitBtn) submitBtn.disabled = false;
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
         }
     });
 
